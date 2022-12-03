@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
-    <title>Simular partido - NBASim</title>
+    <title>Resultados - NBASim</title>
     <meta name="description" content="Plataforma que permite simular partidos NBA para observar posibles cambios en rotaciones de cara al futuro.">
     <link rel="stylesheet" href="static/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,400i,700,700i,600,600i&amp;display=swap">
@@ -71,7 +71,44 @@
             <section class="clean-block features">
                 <div class="container">
                     <div class="block-heading">
-                        <h2 class="text-info">Estadísticas del partido</h2>
+                        <h2 class="text-info">Estadísticas del partido simulado</h2>
+                        <h4>Esto es lo que hubiera pasado si:</h4>
+                        <ul>
+                            {% for k in range(condiciones|length) %}
+                                <li>{% if condiciones[k]['tipo'] == "jugador" %}
+                                        {{ condiciones[k]['actor'] }}
+                                    {% endif %}
+                                    {% if condiciones[k]['tipo'] == "equipo" %}
+                                        {{ condiciones[k]['actor'][1] }}
+                                    {% endif %}
+                                     hubiera 
+                                    {% if condiciones[k]['accion'] != "tirado%" %}
+                                        {{ condiciones[k]['accion'] }}
+                                    {% endif %}
+                                    {% if condiciones[k]['accion'] == "tirado%" %}
+                                        tirado con un porcentaje del
+                                    {% endif %}
+                                    {{ condiciones[k]['valor'] }} 
+                                    {% if condiciones[k]['tipo'] == "equipo" %}
+                                        balones.
+                                    {% endif %}
+                                    {% if condiciones[k]['tipo'] == "jugador" and condiciones[k]['accion'] == "jugado" %}
+                                        minutos.
+                                    {% endif %}
+                                    {% if condiciones[k]['tipo'] == "jugador" and condiciones[k]['accion'] == "tirado" %}
+                                        {% if condiciones[k]['tipotiro'] == "triples" %}
+                                            triples.
+                                        {% endif %}
+                                        {% if condiciones[k]['tipotiro'] == "fg" %}
+                                            tiros de campo.
+                                        {% endif %}
+                                    {% endif %}
+                                    {% if condiciones[k]['tipo'] == "jugador" and condiciones[k]['accion'] == "tirado%" %}
+                                       % en {{ condiciones[k]['tipotiro'] }}.
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul> 
                     </div>
                     <div>
                         <div class="card card-default card-input">
@@ -204,61 +241,6 @@
                         </div>
                     </div>
                     <br>
-                </div>
-                <div class="container">
-                    <br>
-                    <h3 style="text-align: center;">¿Qué hubiera pasado si...?</h3>
-                    <div id="sim0" style="display: none;">
-                        <br>
-                        <div class="card card-default card-input">
-                            <div class="card-body">
-                                <nobr>
-                                    <select name="actor0" onchange="cambiaEntrada1(this)">
-                                        <optgroup label="Equipos">
-                                            <option value="{{ datos['local'][0] }},{{ datos['local'][1] }}">{{ datos['local'][1] }}</option>
-                                            <option value="{{ datos['visitante'][0] }},{{ datos['visitante'][1] }}">{{ datos['visitante'][1] }}</option>
-                                        </optgroup>
-                                        <optgroup label="Jugadores de {{ datos['local'][1] }}">
-                                            {% for j in datos['jugadoresLocal'] %}
-                                                <option value="{{ j }}">{{ j }}</option>
-                                            {% endfor %}
-                                        </optgroup>
-                                        <optgroup label="Jugadores de {{ datos['visitante'][1] }}">
-                                            {% for j in datos['jugadoresVisitante'] %}
-                                                <option value="{{ j }}">{{ j }}</option>
-                                            {% endfor %}
-                                        </optgroup>
-                                    </select>
-                                    <label id="hubiera0"> hubiera </label>
-                                    <select name = "accionequipo0" onchange="cambiaEntrada2(this)">
-                                        <option value="robado">robado</option>
-                                        <option value="reboteado">reboteado</option>
-                                    </select>
-                                    <select name = "accionjugador0" style="display:none;" onchange="cambiaEntrada2(this)">
-                                        <option value="tirado">tirado</option>
-                                        <option value="tirado%">tirado con un porcentaje de</option>
-                                        <option value="jugado">jugado</option>
-                                    </select>
-                                    <input type="number" min="0" name="num0"/>
-                                    <label id="robos0"> balones </label>
-                                    <label id="minutos0" style="display: none;"> minutos </label>
-                                    <label id="tipotiro0" style="display: none;"> en </label>
-                                    <select name="tipotiro0" style="display: none;">
-                                        <option value="fg" selected>tiros de campo</option>
-                                        <option value="triples">triples</option>
-                                    </select>
-                                    <input type="hidden" name="accion0" value="equipo">
-                                </nobr>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <br>
-                <div class="button_plus" onclick="addEntrada()"></div>
-                <br>
-                <div>
-                    <br>
-                    <button class="btn btn-primary btn-lg" type="submit" style="display: block; margin-left: auto; margin-right:auto">SIMULAR</button>
                 </div>
             </section>
             <input type="hidden" id="nCondiciones" name="nCondiciones" value="0" />
