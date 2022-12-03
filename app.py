@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 
 #VARIABLES GLOBALES
-datos = list()
+datos = dict()
 
 #Ruta base: página principal
 @app.route('/', methods=['GET', 'POST'])
@@ -59,16 +59,17 @@ def resultados() :
         for i in range(nCondiciones) :
             condiciones.append(dict())
             condiciones[i]["tipo"] = request.form['accion' + str(i + 1)]
-            condiciones[i]["actor"] = request.form['actor' + str(i + 1)]
             if condiciones[i]["tipo"] == "equipo" :
+                condiciones[i]["actor"] = request.form['actor' + str(i + 1)].split(",")
                 condiciones[i]["accion"] = request.form['accionequipo' + str(i + 1)]
             else :
-               condiciones[i]["accion"] = request.form['accionjugador' + str(i + 1)] 
+                condiciones[i]["actor"] = request.form['actor' + str(i + 1)]
+                condiciones[i]["accion"] = request.form['accionjugador' + str(i + 1)] 
             condiciones[i]["valor"] = request.form['num' + str(i + 1)]
             if "tirado" in condiciones[i]["accion"] :
                 condiciones[i]["tipotiro"] = request.form['tipotiro' + str(i + 1)]
-        #resultados = simularPartido(datos, condiciones)
-        return render_template('resultados.html')
+        #nuevosDatos = simularPartido(datos, condiciones)
+        return render_template('resultados.html', datos=nuevosDatos, condiciones=condiciones, atributos = ['JUGADOR', 'MP', 'FG', 'FGA', 'FG%', '3P', '3PA', '3P%', 'FT', 'FTA', 'FT%', 'ORB', 'DRB', 'TRB', 'AST', 'STL', 'BLK', 'TOV', 'PF', 'PTS', '+/-'])
 
 
 if __name__ == '__main__' :
