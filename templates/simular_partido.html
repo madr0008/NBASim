@@ -11,7 +11,50 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/baguettebox.js/1.11.1/baguetteBox.min.css">
     <link rel="stylesheet" href="static/css/vanilla-zoom.min.css">
 </head>
+<style>
+    .button_plus {
+        position: relative;
+        width: 35px;
+        height: 35px;
+        background: #fff;
+        cursor: pointer;
+        border: 2px solid #095776;
+        left: 50%;
+    }
 
+    .button_plus:after {
+        content: '';
+        position: absolute;
+        transform: translate(-50%, -50%);
+        height: 4px;
+        width: 50%;
+        background: #095776;
+        top: 50%;
+        left: 50%;
+    }
+
+    .button_plus:before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #095776;
+        height: 50%;
+        width: 4px;
+    }
+
+    .button_plus:hover:before,
+    .button_plus:hover:after {
+        background: #fff;
+        transition: 0.2s;
+    }
+
+    .button_plus:hover {
+        background-color: #095776;
+        transition: 0.2s;
+    }
+</style>
 <body>
     <nav class="navbar navbar-light navbar-expand-lg fixed-top bg-white clean-navbar">
         <div class="container"><a class="navbar-brand logo" href="/">NBASim</a><button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-1"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
@@ -162,12 +205,63 @@
                     </div>
                     <br>
                 </div>
-                <!--Aspectos del partido a cambiar-->
+                <div class="container">
+                    <br>
+                    <h3 style="text-align: center;">¿Qué hubiera pasado si...?</h3>
+                    <div id="sim0" style="display: none;">
+                        <br>
+                        <div class="card card-default card-input">
+                            <div class="card-body">
+                                <nobr>
+                                    <select name="actor0" onchange="cambiaEntrada1(this)">
+                                        <optgroup label="Equipos">
+                                            <option value="{{ datos['local'][0] }}">{{ datos['local'][1] }}</option>
+                                            <option value="{{ datos['visitante'][0] }}">{{ datos['visitante'][1] }}</option>
+                                        </optgroup>
+                                        <optgroup label="Jugadores de {{ datos['local'][1] }}">
+                                            {% for j in datos['jugadoresLocal'] %}
+                                                <option value="{{ j }}">{{ j }}</option>
+                                            {% endfor %}
+                                        </optgroup>
+                                        <optgroup label="Jugadores de {{ datos['visitante'][1] }}">
+                                            {% for j in datos['jugadoresVisitante'] %}
+                                                <option value="{{ j }}">{{ j }}</option>
+                                            {% endfor %}
+                                        </optgroup>
+                                    </select>
+                                    <label id="hubiera0"> hubiera </label>
+                                    <select name = "accionequipo0" onchange="cambiaEntrada2(this)">
+                                        <option value="robado">robado</option>
+                                        <option value="reboteado">reboteado</option>
+                                    </select>
+                                    <select name = "accionjugador0" style="display:none;" onchange="cambiaEntrada2(this)">
+                                        <option value="tirado">tirado</option>
+                                        <option value="tirado%">tirado con un porcentaje de</option>
+                                        <option value="jugado">jugado</option>
+                                    </select>
+                                    <input type="number" min="0" name="num0"/>
+                                    <label id="robos0"> balones </label>
+                                    <label id="minutos0" style="display: none;"> minutos </label>
+                                    <label id="tipotiro0" style="display: none;"> en </label>
+                                    <select name="tipotiro0" style="display: none;">
+                                        <option value="fg" selected>tiros de campo</option>
+                                        <option value="triples">triples</option>
+                                    </select>
+                                    <input type="hidden" name="accion0" value="equipo">
+                                </nobr>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <br>
+                <div class="button_plus" onclick="addEntrada()"></div>
+                <br>
                 <div>
                     <br>
                     <button class="btn btn-primary btn-lg" type="submit" style="display: block; margin-left: auto; margin-right:auto">SIMULAR</button>
                 </div>
             </section>
+            <input type="hidden" id="nCondiciones" name="nCondiciones" value="0" />
         </form>
     </main>
     <footer class="page-footer dark"></footer>
@@ -175,6 +269,112 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/baguettebox.js/1.11.1/baguetteBox.min.js"></script>
     <script src="static/js/vanilla-zoom.js"></script>
     <script src="static/js/theme.js"></script>
+    <script>
+
+        var i = 0;
+        var nCond = 0;
+
+        function cambiaEntrada1(s) {
+            var opt = document.querySelector('select[name="' + s.name + '"] option:checked').parentElement.label;
+            var id = s.name.split("actor")[1];
+            var equipo = document.getElementsByName("accionequipo" + id)[0];
+            var jugador = document.getElementsByName("accionjugador" + id)[0];
+            if (opt == "Equipos") {
+                jugador.style.display = "none";
+                equipo.style.display = "inline";
+                cambiaEntrada2(document.getElementsByName("accionequipo" + id)[0]);
+                document.getElementsByName("accion" + id)[0].value = "equipo";
+            } else {
+                equipo.style.display = "none";
+                jugador.style.display = "inline";
+                cambiaEntrada2(document.getElementsByName("accionjugador" + id)[0]);
+                document.getElementsByName("accion" + id)[0].value = "jugador";
+            }
+        }
+
+        function cambiaEntrada2(s) {
+            if (s.name.includes("equipo")) {
+                var id = s.name.split("accionequipo")[1];
+                document.getElementsByName("tipotiro" + id)[0].style.display = "none";
+                document.getElementById("tipotiro" + id).style.display = "none";
+                document.getElementById("minutos" + id).style.display = "none";
+                document.getElementById("robos" + id).style.display = "inline";
+            } else {
+                var id = s.name.split("accionjugador")[1];
+                if (s.value == "tirado") {
+                    document.getElementById("robos" + id).style.display = "none";
+                    document.getElementById("minutos" + id).style.display = "none";
+                    document.getElementById("tipotiro" + id).style.display = "none";
+                    document.getElementsByName("tipotiro" + id)[0].style.display = "inline";
+                } else if (s.value == "tirado%") {
+                    document.getElementById("robos" + id).style.display = "none";
+                    document.getElementById("minutos" + id).style.display = "none";
+                    document.getElementById("tipotiro" + id).style.display = "inline";
+                    document.getElementsByName("tipotiro" + id)[0].style.display = "inline";
+                } else if (s.value == "jugado") {
+                    document.getElementById("robos" + id).style.display = "none";
+                    document.getElementById("tipotiro" + id).style.display = "none";
+                    document.getElementsByName("tipotiro" + id)[0].style.display = "none";
+                    document.getElementById("minutos" + id).style.display = "inline";
+                }
+            }
+        }
+        
+        function duplicar(original) {
+            var clone = original.cloneNode(true); //"deep" clone
+            i++;
+            clone.id = "sim" + i; //there can only be one element with an ID
+            original.parentNode.appendChild(clone);
+        }
+
+        function addEntrada() {
+            duplicar(document.getElementById('sim0'));
+            clonado = document.getElementById('sim' + i);
+            clonado.style.display = "block";
+            var hijos = clonado.children[1].children[0].children[0];
+            var cont = 0;
+            var nombre = "actor";
+            for (var j = 0 ; j < hijos.children.length ; j++) {
+                if (hijos.children[j].nodeName == "SELECT" || hijos.children[j].nodeName == "INPUT" || hijos.children[j].nodeName == "LABEL") {
+                    if (cont == 0) {
+                        hijos.children[j].name = nombre + i;
+                    } else if (cont == 1) {
+                        nombre = "hubiera";
+                        hijos.children[j].id = nombre + i;
+                    } else if (cont == 2) {
+                        nombre = "accionequipo";
+                        hijos.children[j].name = nombre + i;
+                    } else if (cont == 3) {
+                        nombre = "accionjugador";
+                        hijos.children[j].name = nombre + i;
+                    } else if (cont == 4) {
+                        nombre = "num";
+                        hijos.children[j].name = nombre + i;
+                    } else if (cont == 5) {
+                        nombre = "robos";
+                        hijos.children[j].id = nombre + i;
+                    } else if (cont == 6) {
+                        nombre = "minutos";
+                        hijos.children[j].id = nombre + i;
+                    } else if (cont == 7) {
+                        nombre = "tipotiro";
+                        hijos.children[j].id = nombre + i;
+                    } else if (cont == 8) {
+                        nombre = "tipotiro";
+                        hijos.children[j].name = nombre + i;
+                    } else if (cont == 9) {
+                        nombre = "accion";
+                        hijos.children[j].name = nombre + i;
+                    }
+                    
+                    cont++;
+                }
+            }
+            nCond++;
+            document.getElementById("nCondiciones").value = nCond;
+        }
+
+    </script>
 </body>
 
 </html>
