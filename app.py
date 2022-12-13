@@ -2,6 +2,7 @@ from flask import Flask, render_template, request
 from jinja2.utils import markupsafe
 from dependencias import Partido
 from dependencias import Equipo
+from dependencias import Simulacion
 
 app = Flask(__name__)
 
@@ -68,7 +69,7 @@ def resultados() :
             condiciones[i]["valor"] = request.form['num' + str(i + 1)]
             if "tirado" in condiciones[i]["accion"] :
                 condiciones[i]["tipotiro"] = request.form['tipotiro' + str(i + 1)]
-        #nuevosDatos = simularPartido(datos, condiciones)
+        nuevosDatos = Simulacion.simularPartido(datos, condiciones)
         return render_template('resultados.html', datos=nuevosDatos, condiciones=condiciones, atributos = ['JUGADOR', 'MP', 'FG', 'FGA', 'FG%', '3P', '3PA', '3P%', 'FT', 'FTA', 'FT%', 'ORB', 'DRB', 'TRB', 'AST', 'STL', 'BLK', 'TOV', 'PF', 'PTS', '+/-'])
 
 
