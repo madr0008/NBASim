@@ -1,40 +1,78 @@
-#Librerias
-import numpy as np
-from dependencias import Estadistica
+# Librerias
 from dependencias import TratamientoDatos
+from scipy.stats import *
+
+
+estadisticasJugadores = {"Equipo" :
+                             {"Nombre":
+                                { "Equipo" : "", "ID" : 0, "Estadisticas" :
+                                    { "Puntos": 0, "Asistencias": 0, "Rebotes": 0, "Robos": 0, "Tiros Anotados": 0, "Tiros": 0, "Triples Anotados": 0, "Triples": 0 } }}}
+
+estadisticasEquipos = {"Nombre" :
+                           { "Puntos": 0, "Rebotes": 0, "Faltas": 0 }}
 
 
 def simularPartido(nombreEquipo, nombreEquipo2):
-    TratamientoDatos.ajustarDatos(nombreEquipo[1])
-    TratamientoDatos.ajustarDatos(nombreEquipo2[1])
 
+    distribucionesEquipos = TratamientoDatos.ajustarDatos("Equipos")
+    distribucionesJugadores = TratamientoDatos.ajustarDatos("Jugadores")
+    inicializarEquipos(nombreEquipo[1],nombreEquipo2[1])
+    inicializarJugadores(nombreEquipo[1],nombreEquipo2[1])
     tiempo = 720
     cuarto = 1
     saque = 0
+    maximo = 24
+    falta = False
+    tiempoUsado = 0
     while tiempo > 0 and cuarto != 4:
         if cuarto == 1 and tiempo == 720:
-            #Equipo es un valor 0 o 1 según el equipo correspondiente, si necesitamos el nombre con valor 0 es equipo y con valor 1 es equipo2
+
+            # Equipo es un valor 0 o 1 según el equipo correspondiente, si necesitamos el nombre con valor 0 es equipo y con valor 1 es equipo2
             equipo = saltoInicial()
             # determinamos el equipo que saltara el siguiente cuarto
-            if equipo:
-                saque = 1
-            else:
-                saque = 0
+            saque = (equipo + equipo) % 2
+
         elif tiempo == 720:
-            equipo = saque #se selecciona el equipo al que le toca sacar de inicio
-        jugador = jugada(equipo)
-        acierto = tiro(jugador)
-        if not acierto:
-            jugador = rebote(equipo)
-        tiempo -= 10
+
+            equipo = saque  # se selecciona el equipo al que le toca sacar de inicio
+            saque = (saque + saque) % 2
+
+        # Se reduce el tiempo de posesión del reloj
+        tiempoUsado = tiempoPosesion(equipo)
+        tiempo -= tiempoUsado
+
+        # Desarrollo de la jugada
+        jugador, falta = jugada(equipo)
+
+        if falta and tiempoUsado > 10:
+            maximo = 14
+        elif falta and tiempoUsado < 10:
+            maximo = maximo - tiempoUsado
+        else:
+            # Desarrollo del tiro
+            acierto = tiro(jugador)
+
+            # Si se falla el tiro se juega el rebote
+            if not acierto:
+                jugador = rebote(equipo)
+                if jugador in equipo:
+                    maximo = 14
+                    # juega el mismo equipo el balón
+                else:
+                    maximo = 24
+                    equipo = (equipo + equipo) % 2
+                    # empieza una nueva posesión del rival
+
+        # Si fin de cuarto se sacan los datos del mismo
         if tiempo <= 0:
             finCuarto()
+            # Si fin del último cuarto se sacan los datos del partido
             if cuarto == 4:
                 finPartido()
+            # Sino se empieza un nuevo cuarto
             else:
                 cuarto += 1
                 tiempo = 720
-                saque = "" #seleccionamos el equipo que sacara el proximo cuarto
 
 
 def saltoInicial():
@@ -47,6 +85,10 @@ def jugada(equipo):
     # Simular jugada
     print("jugada")
     return "Jugador"
+
+
+def tiempoPosesion(equipo):
+    return 1
 
 
 def tiro(jugador):
@@ -63,7 +105,7 @@ def rebote(equipo):
 
 
 def finCuarto():
-    #procesar datos cuarto
+    # procesar datos cuarto
     print("Fin cuarto")
 
 
@@ -72,19 +114,7 @@ def finPartido():
     print("Final partido")
 
 
-def elegirDistribucion(datos):
-    resultados = Estadistica.comparar_distribuciones(
-        x=np.array(datos),  # Se pasa la lista como un array NumPy
-        familia='realall',
-        # Se escribe la familia de distribuciones que queremos tener en cuenta: {'realall', 'realline', 'realplus', 'real0to1', 'discreta'}
-        ordenar='bic',
-        verbose=False
-    )
-    return resultados.values[0], resultados.values[0][5]
-
-
-def aplicaDistribucionJugador(jugador):
-    global distribucionesJugadores
+def aplicaDistribucionJugador(jugador, distribucionesJugadores):
 
     if distribucionesJugadores[jugador]["nombre"] == "norm":
         print("normal")
@@ -148,8 +178,7 @@ def aplicaDistribucionJugador(jugador):
         print("normal")
 
 
-def aplicaDistribucionEquipo(equipo):
-    global distribucionesEquipos
+def aplicaDistribucionEquipo(equipo, distribucionesEquipos):
 
     if distribucionesEquipos[equipo] == "normal":
         print("normal")
@@ -212,3 +241,10 @@ def aplicaDistribucionEquipo(equipo):
     elif distribucionesEquipos[equipo]["nombre"] == "truncweibull_min":
         print("normal")
 
+
+def inicializarEquipos(nombreLocal, nombreVisitante):
+    return 1
+
+
+def inicializarJugadores(nombreLocal, nombreVisitante):
+    return 1
