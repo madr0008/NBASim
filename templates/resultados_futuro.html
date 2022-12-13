@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Resultados - NBASim</title>
+    <meta name="description" content="Plataforma que permite simular partidos NBA para observar posibles cambios en rotaciones de cara al futuro.">
+    <link rel="stylesheet" href="static/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,400i,700,700i,600,600i&amp;display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/baguettebox.js/1.11.1/baguetteBox.min.css">
+    <link rel="stylesheet" href="static/css/vanilla-zoom.min.css">
+</head>
+<style>
+    .button_plus {
+        position: relative;
+        width: 35px;
+        height: 35px;
+        background: #fff;
+        cursor: pointer;
+        border: 2px solid #095776;
+        left: 50%;
+    }
+
+    .button_plus:after {
+        content: '';
+        position: absolute;
+        transform: translate(-50%, -50%);
+        height: 4px;
+        width: 50%;
+        background: #095776;
+        top: 50%;
+        left: 50%;
+    }
+
+    .button_plus:before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #095776;
+        height: 50%;
+        width: 4px;
+    }
+
+    .button_plus:hover:before,
+    .button_plus:hover:after {
+        background: #fff;
+        transition: 0.2s;
+    }
+
+    .button_plus:hover {
+        background-color: #095776;
+        transition: 0.2s;
+    }
+</style>
+<body>
+    <nav class="navbar navbar-light navbar-expand-lg fixed-top bg-white clean-navbar">
+        <div class="container"><a class="navbar-brand logo" href="#">NBASim</a><button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-1"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="navcol-1">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="/elegir_equipos_pasado">SIMULAR A PASADO</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/elegir_equipos_futuro">SIMULAR A FUTURO</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="#">INICIO</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <main class="page">
+        <section class="clean-block features">
+            <div class="container">
+                <div class="block-heading">
+                    <h2 class="text-info">Estadísticas del partido simulado</h2>
+                </div>
+                <div>
+                    <div class="card card-default card-input">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-2 feature-box">
+                                    <img src="static/img/equipos/{{ datos['local'][0] }}.png" width="75%">
+                                </div>
+                                <div class="col text-center">
+                                    <h1 class="text-center">
+                                        <strong>{{ datos['estadisticasLocal'][18] }} - {{ datos['estadisticasVisitante'][18] }}</strong>
+                                    </h1>
+                                </div>
+                                <div class="col-md-2 feature-box">
+                                    <img src="static/img/equipos/{{ datos['visitante'][0] }}.png" width="75%">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <br>
+            </div>
+            <div class="container">
+                <br>
+                <h3 style="text-align: center;">{{ datos['local'][1] }}</h3>
+                <br>
+                <div>
+                    <div>
+                        <h4 style="text-align: center;">Estadísticas colectivas</h4>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        {% for i in range(atributos|length - 2) %}
+                                            <th>{{ atributos[i + 1] }}</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        {% for i in range(datos['estadisticasLocal']|length - 1) %}
+                                            <td>{{ datos['estadisticasLocal'][i] }}</td>
+                                        {% endfor %}
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div>
+                        <br>
+                        <h4 style="text-align: center;">Estadísticas individuales</h4>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        {% for i in range(atributos|length) %}
+                                            <th>{{ atributos[i] }}</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for i in datos['jugadoresLocal'] %}
+                                        <tr>
+                                            <td>{{ i }}</td>
+                                            {% for j in range(datos['jugadoresLocal'][i]|length) %}
+                                                <td>{{ datos['jugadoresLocal'][i][j] }}</td>
+                                            {% endfor %}
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <br>
+            </div>
+            <div class="container">
+                <br>
+                <h3 style="text-align: center;">{{ datos['visitante'][1] }}</h3>
+                <br>
+                <div>
+                    <div>
+                        <h4 style="text-align: center;">Estadísticas colectivas</h4>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        {% for i in range(atributos|length - 2) %}
+                                            <th>{{ atributos[i + 1] }}</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        {% for i in range(datos['estadisticasVisitante']|length - 1) %}
+                                            <td>{{ datos['estadisticasVisitante'][i] }}</td>
+                                        {% endfor %}
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div>
+                        <br>
+                        <h4 style="text-align: center;">Estadísticas individuales</h4>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        {% for i in range(atributos|length) %}
+                                            <th>{{ atributos[i] }}</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for i in datos['jugadoresVisitante'] %}
+                                        <tr>
+                                            <td>{{ i }}</td>
+                                            {% for j in range(datos['jugadoresVisitante'][i]|length) %}
+                                                <td>{{ datos['jugadoresVisitante'][i][j] }}</td>
+                                            {% endfor %}
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <br>
+            </div>
+        </section>
+    </main>
+    <footer class="page-footer dark"></footer>
+    <script src="static/bootstrap/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/baguettebox.js/1.11.1/baguetteBox.min.js"></script>
+    <script src="static/js/vanilla-zoom.js"></script>
+    <script src="static/js/theme.js"></script>
+</body>
+
+</html>

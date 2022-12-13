@@ -43,11 +43,11 @@
         </div>
     </nav>
     <main class="page">
-        <form method=post action="/elegir_partido">
+        <form method=post action="/resultados_futuro">
             <section class="clean-block features">
                 <div class="container">
                     <div class="block-heading">
-                        <h2 class="text-info">Elegir equipos para simular a pasado</h2>
+                        <h2 class="text-info">Elegir equipos para simular a futuro</h2>
                         <select class="form-select-lg" name="temporada" value="temporada">
                             <optgroup label="temporada">
                                 {% for i in range(2022, 2000, -1) %}
@@ -465,7 +465,7 @@
                     </div>
                 </div>
                 <div>
-                    <button class="btn btn-primary btn-lg" type="submit" style="display: block; margin-left: auto; margin-right:auto">ELEGIR EQUIPOS</button>
+                    <button class="btn btn-primary btn-lg" type="submit" style="display: block; margin-left: auto; margin-right:auto">SIMULAR PARTIDO</button>
                 </div>
             </section>
         </form>

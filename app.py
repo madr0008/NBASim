@@ -1,7 +1,5 @@
 from flask import Flask, render_template, request
-from jinja2.utils import markupsafe
 from dependencias import Partido
-from dependencias import Equipo
 from dependencias import Simulacion
 
 app = Flask(__name__)
@@ -17,9 +15,15 @@ def index() :
 
 
 #Ruta para elegir equipos
-@app.route('/elegir_equipos', methods=['GET', 'POST'])
-def simular() :    
+@app.route('/elegir_equipos_pasado', methods=['GET', 'POST'])
+def elegir_pasado() :    
     return render_template('elegir_equipos.html')
+
+
+#Ruta para elegir equipos
+@app.route('/elegir_equipos_futuro', methods=['GET', 'POST'])
+def elegir_futuro() :    
+    return render_template('elegir_equipos_futuro.html')
 
 
 #Ruta para elegir partido
@@ -48,6 +52,20 @@ def simular_partido() :
         #Solicitar datos del partido
         datos = Partido.obtenerDatosPartido(equipo1, equipo2, fechaPartido, temporada)
         return render_template('simular_partido.html', datos=datos, atributos = ['JUGADOR', 'MP', 'FG', 'FGA', 'FG%', '3P', '3PA', '3P%', 'FT', 'FTA', 'FT%', 'ORB', 'DRB', 'TRB', 'AST', 'STL', 'BLK', 'TOV', 'PF', 'PTS', '+/-'])
+
+
+#Ruta para elegir parámetros a simular
+@app.route('/resultados_futuro', methods=['GET', 'POST'])
+def simular_futuro() :
+    global datos
+    if request.method == 'POST':
+        temporada = int(request.form['temporada'])
+        equipo1 = request.form['equipo1'].split(",")
+        equipo2 = request.form['equipo2'].split(",")
+        #Solicitar datos del partido
+        nuevosDatos = Simulacion.simularPartido(equipo1, equipo2)
+        return render_template('resultados_futuro.html', datos=nuevosDatos, atributos = ['JUGADOR', 'MP', 'FG', 'FGA', 'FG%', '3P', '3PA', '3P%', 'FT', 'FTA', 'FT%', 'ORB', 'DRB', 'TRB', 'AST', 'STL', 'BLK', 'TOV', 'PF', 'PTS', '+/-'])
+
 
 
 #Ruta para mostrar resultados

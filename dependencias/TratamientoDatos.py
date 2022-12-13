@@ -5,7 +5,7 @@ from basketball_reference_scraper.box_scores import get_box_scores
 from basketball_reference_scraper.teams import get_roster
 import pickle
 import csv
-import Estadistica
+from dependencias import Estadistica
 import numpy as np
 
 equipos = {
@@ -99,7 +99,7 @@ def leerCSVJugadores():
             datos["Estadisticas"] = {"Minutos": [], "Puntos": [], "Asistencias": [], "Rebotes": [], "Robos": [], "Tiros": [],
                                      "PorcentajeAciertos": [], "Triples": [], "PorcentajeTriples": []}
             datosJugador[row[0]] = datos
-        fichero_datos = open("Jugadores", "wb")
+        fichero_datos = open("ficheros/Jugadores", "wb")
         pickle.dump(datosJugador, fichero_datos)
         fichero_datos.close()
 
@@ -117,14 +117,14 @@ def leerCSVEquipos():
             datos["Estadio"] = row[8]
             datos["Estadisticas"] = {"Robos": [], "Faltas": [], "Rebotes": [], "TiempoPosesion" : []}
             datosEquipo[row[1]] = datos
-        fichero_datos = open("Equipos", "wb")
+        fichero_datos = open("ficheros/Equipos", "wb")
         pickle.dump(datosEquipo, fichero_datos)
         fichero_datos.close()
 
 
 def leerPartidos():
     leerCSVEquipos()
-    infile = open("Equipos", "rb")
+    infile = open("ficheros/Equipos", "rb")
     equipo = pickle.load(infile)
     infile.close()
     with open('games.csv', newline='') as File:
@@ -133,7 +133,7 @@ def leerPartidos():
         for row in reader:
             equipo[row[3]]["Estadisticas"]["Rebotes"].append(int(float(row[12])))
             equipo[row[4]]["Estadisticas"]["Rebotes"].append(int(float(row[19])))
-        fichero_datos = open("Equipos", "wb")
+        fichero_datos = open("ficheros/Equipos", "wb")
         pickle.dump(equipo, fichero_datos)
         fichero_datos.close()
     leerEstadisticasIndividualesEquipo()
@@ -142,7 +142,7 @@ def leerPartidos():
 
 def leerPartidosJugadores():
     leerCSVJugadores()
-    infile = open("Jugadores", "rb")
+    infile = open("ficheros/Jugadores", "rb")
     jugadores = pickle.load(infile)
     infile.close()
     partidos = []
@@ -174,13 +174,13 @@ def leerPartidosJugadores():
                     jugadores[row[5]]["Estadisticas"]["Triples"].append(int(float(row[14])))
                 if row[15] != "":
                     jugadores[row[5]]["Estadisticas"]["PorcentajeTriples"].append(float(row[15]))
-        fichero_datos = open("Jugadores", "wb")
+        fichero_datos = open("ficheros/Jugadores", "wb")
         pickle.dump(jugadores, fichero_datos)
         fichero_datos.close()
 
 
 def cambioClaves():
-    infile = open("Equipos", "rb")
+    infile = open("ficheros/Equipos", "rb")
     equipos = pickle.load(infile)
     infile.close()
     nuevoEquipos = {}
@@ -192,13 +192,13 @@ def cambioClaves():
         datos["Estadisticas"] = equipos[equipo]["Estadisticas"]
         nuevoEquipos[equipos[equipo]["NombreCompleto"]] = datos
     print(nuevoEquipos)
-    fichero_datos = open("Equipos", "wb")
+    fichero_datos = open("ficheros/Equipos", "wb")
     pickle.dump(nuevoEquipos, fichero_datos)
     fichero_datos.close()
 
 
 def leerEstadisticasIndividualesEquipo():
-    infile = open("Equipos","rb")
+    infile = open("ficheros/Equipos","rb")
     equipos = pickle.load(infile)
     infile.close()
     with open('games_details.csv', newline='') as File:
@@ -218,30 +218,30 @@ def leerEstadisticasIndividualesEquipo():
                 robos += int(float(row[23]))
             if row[26] != "":
                 faltas += int(float(row[26]))
-    fichero_datos = open("Equipos", "wb")
+    fichero_datos = open("ficheros/Equipos", "wb")
     pickle.dump(equipos, fichero_datos)
     fichero_datos.close()
 
 
 def imprimirCSVJugadores():
-    infile = open("Jugadores", "rb")
+    infile = open("ficheros/Jugadores", "rb")
     jugadores = pickle.load(infile)
     infile.close()
     print(jugadores)
 
 
 def imprimirCSVEquipo():
-    infile = open("Equipos", "rb")
+    infile = open("ficheros/Equipos", "rb")
     jugadores = pickle.load(infile)
     infile.close()
     print(jugadores)
 
 
 def ajustarDatos(nombre):
-    archivo = "Jugadores"
-    if nombre in equipos.keys :
-        archivo = "Equipos"
-    infile = open("Equipos", "rb")
+    archivo = "ficheros/ficheros/Jugadores"
+    if nombre in equipos.keys() :
+        archivo = "ficheros/Equipos"
+    infile = open("ficheros/Equipos", "rb")
     objeto = pickle.load(infile)
     infile.close()
     distribucion = {}
