@@ -4,8 +4,9 @@ import numpy as np
 
 
 # Gráficos
-import matplotlib.pyplot as plt
 from matplotlib import style
+import matplotlib.pyplot as plt
+
 
 # Ajuste de distribuciones
 from scipy import stats

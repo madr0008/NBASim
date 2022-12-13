@@ -1,6 +1,10 @@
 # Librerias
 from dependencias import TratamientoDatos
 from scipy.stats import *
+import random
+
+distribucionesEquipos = {}
+distribucionesJugadores = {}
 
 
 estadisticasJugadores = {"Equipo" :
@@ -13,8 +17,10 @@ estadisticasEquipos = {"Nombre" :
 
 
 def simularPartido(nombreEquipo, nombreEquipo2):
+    global distribucionesEquipos; global distribucionesJugadores
 
-    distribucionesEquipos = TratamientoDatos.ajustarDatos("Equipos")
+    distribucionesEquipos[nombreEquipo[1]] = TratamientoDatos.ajustarDatos(nombreEquipo[1])
+    distribucionesEquipos[nombreEquipo2[1]] = TratamientoDatos.ajustarDatos(nombreEquipo2[1])
     distribucionesJugadores = TratamientoDatos.ajustarDatos("Jugadores")
     inicializarEquipos(nombreEquipo[1],nombreEquipo2[1])
     inicializarJugadores(nombreEquipo[1],nombreEquipo2[1])
@@ -25,6 +31,7 @@ def simularPartido(nombreEquipo, nombreEquipo2):
     falta = False
     tiempoUsado = 0
     while tiempo > 0 and cuarto != 4:
+
         if cuarto == 1 and tiempo == 720:
 
             # Equipo es un valor 0 o 1 según el equipo correspondiente, si necesitamos el nombre con valor 0 es equipo y con valor 1 es equipo2
@@ -38,30 +45,41 @@ def simularPartido(nombreEquipo, nombreEquipo2):
             saque = (saque + saque) % 2
 
         # Se reduce el tiempo de posesión del reloj
-        tiempoUsado = tiempoPosesion(equipo)
-        tiempo -= tiempoUsado
-
-        # Desarrollo de la jugada
-        jugador, falta = jugada(equipo)
-
-        if falta and tiempoUsado > 10:
-            maximo = 14
-        elif falta and tiempoUsado < 10:
-            maximo = maximo - tiempoUsado
+        if tiempo > 24:
+            tiempoUsado = tiempoPosesion(equipo, maximo)
         else:
-            # Desarrollo del tiro
-            acierto = tiro(jugador)
+            tiempoUsado = tiempoPosesion(equipo, tiempo)
 
-            # Si se falla el tiro se juega el rebote
-            if not acierto:
-                jugador = rebote(equipo)
-                if jugador in equipo:
+        if tiempoUsado == -1:
+            tiempo = -1
+        else:
+            tiempo -= tiempoUsado
+
+        if tiempo >= 0:
+            # Desarrollo de la jugada
+            jugador, robo,falta = jugada(equipo)
+            if robo:
+                maximo = 24
+                equipo = (equipo + equipo) % 2
+            else:
+                if falta and tiempoUsado > 10:
                     maximo = 14
-                    # juega el mismo equipo el balón
+                elif falta and tiempoUsado < 10:
+                    maximo = maximo - tiempoUsado
                 else:
-                    maximo = 24
-                    equipo = (equipo + equipo) % 2
-                    # empieza una nueva posesión del rival
+                    # Desarrollo del tiro
+                    acierto = tiro(jugador)
+
+                    # Si se falla el tiro se juega el rebote
+                    if not acierto:
+                        jugador = rebote(equipo)
+                        if jugador in equipo:
+                            maximo = 14
+                            # juega el mismo equipo el balón
+                        else:
+                            maximo = 24
+                            equipo = (equipo + equipo) % 2
+                            # empieza una nueva posesión del rival
 
         # Si fin de cuarto se sacan los datos del mismo
         if tiempo <= 0:
@@ -76,32 +94,53 @@ def simularPartido(nombreEquipo, nombreEquipo2):
 
 
 def saltoInicial():
-    # Simular salto inicial
-    print("Salto Inicial")
-    return "Equipo"
+    # Simular salto inicial probabilidad 50% ambos equipos
+    return random.randint(0,1)
 
 
 def jugada(equipo):
     # Simular jugada
-    print("jugada")
-    return "Jugador"
+    if robo():
+        return "",True,False
+    else:
+        if falta():
+            return "",False,True
+        else:
+            jugador = asistencia(equipo)
+    return jugador,False,False
 
 
-def tiempoPosesion(equipo):
-    return 1
+def robo():
+    return True
+
+
+def asistencia(equipo):
+    return ""
+
+
+def tiempoPosesion(equipo, tiempo):
+    if tiempo <= 2:
+        return -1
+    #sino devolvemos la normal con maximo el tiempo restante
+    elif tiempo >= 24:
+        return 1
+
+    return norm.rvs(loc,scale,size=1)
 
 
 def tiro(jugador):
     # Simular tiro
-    aplicaDistribucionJugador(jugador)
-    print("tiro")
+    valor = aplicaDistribucionJugador(jugador,"PorcentajeAciertos")
+    resultado = random.random()
+    if resultado > valor:
+        return False
     return True
 
 
 def rebote(equipo):
     # Simular rebote
-    print("rebote")
-    return "Rebote"
+    valor = aplicarDistribucionEquipo(equipo,"Rebote")
+    return valor
 
 
 def finCuarto():
@@ -114,132 +153,400 @@ def finPartido():
     print("Final partido")
 
 
-def aplicaDistribucionJugador(jugador, distribucionesJugadores):
+def aplicaDistribucionJugador(jugador, estadistica):
+    global distribucionesJugadores
 
     if distribucionesJugadores[jugador]["nombre"] == "norm":
-        print("normal")
+        loc = distribucionesJugadores[jugador][estadistica][1]["loc"]
+        scale = distribucionesJugadores[jugador][estadistica][1]["scale"]
+        val = norm.rvs(loc, scale, size=1)
+
     elif distribucionesJugadores[jugador]["nombre"] == "gumbel_r":
-        print("normal")
+        loc = distribucionesJugadores[jugador][estadistica][1]["loc"]
+        scale = distribucionesJugadores[jugador][estadistica][1]["scale"]
+        val = gumbel_r.rvs(loc, scale, size=1)
+
     elif distribucionesJugadores[jugador]["nombre"] == "gumbel_l":
-        print("normal")
+        loc = distribucionesJugadores[jugador][estadistica][1]["loc"]
+        scale = distribucionesJugadores[jugador][estadistica][1]["scale"]
+        val = gumbel_l.rvs(loc, scale, size=1)
+
     elif distribucionesJugadores[jugador]["nombre"] == "logistic":
-        print("normal")
+        loc = distribucionesJugadores[jugador][estadistica][1]["loc"]
+        scale = distribucionesJugadores[jugador][estadistica][1]["scale"]
+        val = logistic.rvs(loc, scale, size=1)
+
     elif distribucionesJugadores[jugador]["nombre"] == "dgamma":
-        print("normal")
+        loc = distribucionesJugadores[jugador][estadistica][1]["loc"]
+        scale = distribucionesJugadores[jugador][estadistica][1]["scale"]
+        a = distribucionesJugadores[jugador][estadistica][1]["a"]
+        val = dgamma.rvs(a,loc, scale, size=1)
+
     elif distribucionesJugadores[jugador]["nombre"] == "hypsecant":
-        print("normal")
+        loc = distribucionesJugadores[jugador][estadistica][1]["loc"]
+        scale = distribucionesJugadores[jugador][estadistica][1]["scale"]
+        val = hypsecant.rvs(loc, scale, size=1)
+
     elif distribucionesJugadores[jugador]["nombre"] == "dweybull":
-        print("normal")
+        loc = distribucionesJugadores[jugador][estadistica][1]["loc"]
+        scale = distribucionesJugadores[jugador][estadistica][1]["scale"]
+        c = distribucionesJugadores[jugador][estadistica][1]["c"]
+        val = dweybull.rvs(c, loc, scale, size=1)
+
     elif distribucionesJugadores[jugador]["nombre"] == "genextreme":
-        print("normal")
+        loc = distribucionesJugadores[jugador][estadistica][1]["loc"]
+        scale = distribucionesJugadores[jugador][estadistica][1]["scale"]
+        c = distribucionesJugadores[jugador][estadistica][1]["c"]
+        val = genextreme.rvs(c,loc, scale, size=1)
+
     elif distribucionesJugadores[jugador]["nombre"] == "skewnorm":
-        print("normal")
+        loc = distribucionesJugadores[jugador][estadistica][1]["loc"]
+        scale = distribucionesJugadores[jugador][estadistica][1]["scale"]
+        a = distribucionesJugadores[jugador][estadistica][1]["a"]
+        val = skewnorm.rvs(a,loc, scale, size=1)
+
     elif distribucionesJugadores[jugador]["nombre"] == "genlogistic":
-        print("normal")
+        loc = distribucionesJugadores[jugador][estadistica][1]["loc"]
+        scale = distribucionesJugadores[jugador][estadistica][1]["scale"]
+        c = distribucionesJugadores[jugador][estadistica][1]["c"]
+        val = genlogistic.rvs(c, loc, scale, size=1)
+
     elif distribucionesJugadores[jugador]["nombre"] == "pearson3":
-        print("normal")
+        loc = distribucionesJugadores[jugador][estadistica][1]["loc"]
+        scale = distribucionesJugadores[jugador][estadistica][1]["scale"]
+        skew = distribucionesJugadores[jugador][estadistica][1]["skew"]
+        val = pearson3.rvs(skew,loc, scale, size=1)
+
     elif distribucionesJugadores[jugador]["nombre"] == "laplace":
-        print("normal")
+        loc = distribucionesJugadores[jugador][estadistica][1]["loc"]
+        scale = distribucionesJugadores[jugador][estadistica][1]["scale"]
+        val = laplace.rvs(loc, scale, size=1)
+
     elif distribucionesJugadores[jugador]["nombre"] == "powernorm":
-        print("normal")
+        loc = distribucionesJugadores[jugador][estadistica][1]["loc"]
+        scale = distribucionesJugadores[jugador][estadistica][1]["scale"]
+        c = distribucionesJugadores[jugador][estadistica][1]["c"]
+        val = powernorm.rvs(c, loc, scale, size=1)
+
     elif distribucionesJugadores[jugador]["nombre"] == "exponnorm":
-        print("normal")
+        loc = distribucionesJugadores[jugador][estadistica][1]["loc"]
+        scale = distribucionesJugadores[jugador][estadistica][1]["scale"]
+        val = exponnorm.rvs(loc, scale, size=1)
+
     elif distribucionesJugadores[jugador]["nombre"] == "normingvgauss":
-        print("normal")
+        loc = distribucionesJugadores[jugador][estadistica][1]["loc"]
+        scale = distribucionesJugadores[jugador][estadistica][1]["scale"]
+        a = distribucionesJugadores[jugador][estadistica][1]["a"]
+        b = distribucionesJugadores[jugador][estadistica][1]["b"]
+        val = normingvgauss.rvs(a,b,loc, scale, size=1)
+
     elif distribucionesJugadores[jugador]["nombre"] == "johnsonsu":
-        print("normal")
-    elif distribucionesJugadores[jugador]["nombre"] == "kauchi":
-        print("normal")
+        loc = distribucionesJugadores[jugador][estadistica][1]["loc"]
+        scale = distribucionesJugadores[jugador][estadistica][1]["scale"]
+        a = distribucionesJugadores[jugador][estadistica][1]["a"]
+        b = distribucionesJugadores[jugador][estadistica][1]["b"]
+        val = johnsonsu.rvs(a,b,loc, scale, size=1)
+
+    elif distribucionesJugadores[jugador]["nombre"] == "cauchy":
+        loc = distribucionesJugadores[jugador][estadistica][1]["loc"]
+        scale = distribucionesJugadores[jugador][estadistica][1]["scale"]
+        val = cauchy.rvs(loc, scale, size=1)
+
     elif distribucionesJugadores[jugador]["nombre"] == "tukeylambda":
-        print("normal")
+        loc = distribucionesJugadores[jugador][estadistica][1]["loc"]
+        scale = distribucionesJugadores[jugador][estadistica][1]["scale"]
+        lam = distribucionesJugadores[jugador][estadistica][1]["lam"]
+        val = tukeylambda.rvs(lam,loc, scale, size=1)
+
     elif distribucionesJugadores[jugador]["nombre"] == "genhyperbolic":
-        print("normal")
+        loc = distribucionesJugadores[jugador][estadistica][1]["loc"]
+        scale = distribucionesJugadores[jugador][estadistica][1]["scale"]
+        p = distribucionesJugadores[jugador][estadistica][1]["p"]
+        a = distribucionesJugadores[jugador][estadistica][1]["a"]
+        b = distribucionesJugadores[jugador][estadistica][1]["b"]
+        val = genhyperbolic.rvs(p,a,b,loc, scale, size=1)
+
     elif distribucionesJugadores[jugador]["nombre"] == "kappa4":
-        print("normal")
+        loc = distribucionesJugadores[jugador][estadistica][1]["loc"]
+        scale = distribucionesJugadores[jugador][estadistica][1]["scale"]
+        h = distribucionesJugadores[jugador][estadistica][1]["h"]
+        k = distribucionesJugadores[jugador][estadistica][1]["k"]
+        val = kappa4.rvs(h,k,loc, scale, size=1)
+
     elif distribucionesJugadores[jugador]["nombre"] == "laplace_asymmetric":
-        print("normal")
+        loc = distribucionesJugadores[jugador][estadistica][1]["loc"]
+        scale = distribucionesJugadores[jugador][estadistica][1]["scale"]
+        kappa = distribucionesJugadores[jugador][estadistica][1]["kappa"]
+        val = laplace_asymmetric.rvs(kappa,loc, scale, size=1)
+
     elif distribucionesJugadores[jugador]["nombre"] == "moyal":
-        print("normal")
+        loc = distribucionesJugadores[jugador][estadistica][1]["loc"]
+        scale = distribucionesJugadores[jugador][estadistica][1]["scale"]
+        val = moyal.rvs(loc, scale, size=1)
+
     elif distribucionesJugadores[jugador]["nombre"] == "t":
-        print("normal")
+        loc = distribucionesJugadores[jugador][estadistica][1]["loc"]
+        scale = distribucionesJugadores[jugador][estadistica][1]["scale"]
+        df = distribucionesJugadores[jugador][estadistica][1]["df"]
+        val = t.rvs(df,loc, scale, size=1)
+
     elif distribucionesJugadores[jugador]["nombre"] == "gennorm":
-        print("normal")
+        loc = distribucionesJugadores[jugador][estadistica][1]["loc"]
+        scale = distribucionesJugadores[jugador][estadistica][1]["scale"]
+        beta = distribucionesJugadores[jugador][estadistica][1]["beta"]
+        val = gennorm.rvs(beta,loc, scale, size=1)
+
     elif distribucionesJugadores[jugador]["nombre"] == "loggamma":
-        print("normal")
+        loc = distribucionesJugadores[jugador][estadistica][1]["loc"]
+        scale = distribucionesJugadores[jugador][estadistica][1]["scale"]
+        c = distribucionesJugadores[jugador][estadistica][1]["c"]
+        val = loggamma.rvs(c, loc, scale, size=1)
+
     elif distribucionesJugadores[jugador]["nombre"] == "nct":
-        print("normal")
+        loc = distribucionesJugadores[jugador][estadistica][1]["loc"]
+        scale = distribucionesJugadores[jugador][estadistica][1]["scale"]
+        df = distribucionesJugadores[jugador][estadistica][1]["df"]
+        nc = distribucionesJugadores[jugador][estadistica][1]["nc"]
+        val = nct.rvs(df,nc,loc, scale, size=1)
+
     elif distribucionesJugadores[jugador]["nombre"] == "crystalball":
-        print("normal")
+        loc = distribucionesJugadores[jugador][estadistica][1]["loc"]
+        scale = distribucionesJugadores[jugador][estadistica][1]["scale"]
+        beta = distribucionesJugadores[jugador][estadistica][1]["beta"]
+        m = distribucionesJugadores[jugador][estadistica][1]["m"]
+        val = crystalball.rvs(beta,m,loc, scale, size=1)
+
     elif distribucionesJugadores[jugador]["nombre"] == "truncnorm":
-        print("normal")
+        loc = distribucionesJugadores[jugador][estadistica][1]["loc"]
+        scale = distribucionesJugadores[jugador][estadistica][1]["scale"]
+        a = distribucionesJugadores[jugador][estadistica][1]["a"]
+        b = distribucionesJugadores[jugador][estadistica][1]["b"]
+        val = truncnorm.rvs(a,b,loc, scale, size=1)
+
     elif distribucionesJugadores[jugador]["nombre"] == "skewcauchy":
-        print("normal")
+        loc = distribucionesJugadores[jugador][estadistica][1]["loc"]
+        scale = distribucionesJugadores[jugador][estadistica][1]["scale"]
+        a = distribucionesJugadores[jugador][estadistica][1]["a"]
+        val = skewcauchy.rvs(a, scale, size=1)
+
     elif distribucionesJugadores[jugador]["nombre"] == "truncweibull_min":
-        print("normal")
+        loc = distribucionesJugadores[jugador][estadistica][1]["loc"]
+        scale = distribucionesJugadores[jugador][estadistica][1]["scale"]
+        c = distribucionesJugadores[jugador][estadistica][1]["p"]
+        a = distribucionesJugadores[jugador][estadistica][1]["a"]
+        b = distribucionesJugadores[jugador][estadistica][1]["b"]
+        val = truncweibull_min.rvs(c,a,b,loc, scale, size=1)
+
+    elif distribucionesJugadores[jugador]["nombre"] == "reciprocal":
+        loc = distribucionesJugadores[jugador][estadistica][1]["loc"]
+        scale = distribucionesJugadores[jugador][estadistica][1]["scale"]
+        a = distribucionesJugadores[jugador][estadistica][1]["a"]
+        b = distribucionesJugadores[jugador][estadistica][1]["b"]
+        val = reciprocal.rvs(a,b,loc, scale, size=1)
+
+    else:
+        loc = distribucionesJugadores[jugador][estadistica][1]["loc"]
+        scale = distribucionesJugadores[jugador][estadistica][1]["scale"]
+        val = norm.rvs(loc, scale, size=1)
+    return val
 
 
-def aplicaDistribucionEquipo(equipo, distribucionesEquipos):
+def aplicaDistribucionEquipo(equipo, estadistica):
+    global distribucionesEquipos
 
-    if distribucionesEquipos[equipo] == "normal":
-        print("normal")
-    elif distribucionesEquipos[equipo] == "gumbel_r":
-        print("normal")
-    elif distribucionesEquipos[equipo] == "gumbel_l":
-        print("normal")
-    elif distribucionesEquipos[equipo] == "logistic":
-        print("normal")
-    elif distribucionesEquipos[equipo] == "dgamma":
-        print("normal")
-    elif distribucionesEquipos[equipo] == "hypsecant":
-        print("normal")
-    elif distribucionesEquipos[equipo] == "dweybull":
-        print("normal")
-    elif distribucionesEquipos[equipo] == "genextreme":
-        print("normal")
-    elif distribucionesEquipos[equipo] == "skewnorm":
-        print("normal")
-    elif distribucionesEquipos[equipo] == "genlogistic":
-        print("normal")
-    elif distribucionesEquipos[equipo] == "pearson3":
-        print("normal")
-    elif distribucionesEquipos[equipo] == "laplace":
-        print("normal")
-    elif distribucionesEquipos[equipo] == "powernorm":
-        print("normal")
-    elif distribucionesEquipos[equipo] == "exponnorm":
-        print("normal")
-    elif distribucionesEquipos[equipo] == "normingvgauss":
-        print("normal")
-    elif distribucionesEquipos[equipo] == "johnsonsu":
-        print("normal")
-    elif distribucionesEquipos[equipo] == "kauchi":
-        print("normal")
-    elif distribucionesEquipos[equipo] == "tukeylambda":
-        print("normal")
-    elif distribucionesEquipos[equipo] == "genhyperbolic":
-        print("normal")
-    elif distribucionesEquipos[equipo] == "kappa4":
-        print("normal")
+    if distribucionesEquipos[equipo]["nombre"] == "norm":
+        loc = distribucionesEquipos[equipo][estadistica][1]["loc"]
+        scale = distribucionesEquipos[equipo][estadistica][1]["scale"]
+        val = norm.rvs(loc, scale, size=1)
+
+    elif distribucionesEquipos[equipo]["nombre"] == "gumbel_r":
+        loc = distribucionesEquipos[equipo][estadistica][1]["loc"]
+        scale = distribucionesEquipos[equipo][estadistica][1]["scale"]
+        val = gumbel_r.rvs(loc, scale, size=1)
+
+    elif distribucionesEquipos[equipo]["nombre"] == "gumbel_l":
+        loc = distribucionesEquipos[equipo][estadistica][1]["loc"]
+        scale = distribucionesEquipos[equipo][estadistica][1]["scale"]
+        val = gumbel_l.rvs(loc, scale, size=1)
+
+    elif distribucionesEquipos[equipo]["nombre"] == "logistic":
+        loc = distribucionesEquipos[equipo][estadistica][1]["loc"]
+        scale = distribucionesEquipos[equipo][estadistica][1]["scale"]
+        val = logistic.rvs(loc, scale, size=1)
+
+    elif distribucionesEquipos[equipo]["nombre"] == "dgamma":
+        loc = distribucionesEquipos[equipo][estadistica][1]["loc"]
+        scale = distribucionesEquipos[equipo][estadistica][1]["scale"]
+        a = distribucionesEquipos[equipo][estadistica][1]["a"]
+        val = dgamma.rvs(a, loc, scale, size=1)
+
+    elif distribucionesEquipos[equipo]["nombre"] == "hypsecant":
+        loc = distribucionesEquipos[equipo][estadistica][1]["loc"]
+        scale = distribucionesEquipos[equipo][estadistica][1]["scale"]
+        val = hypsecant.rvs(loc, scale, size=1)
+
+    elif distribucionesEquipos[equipo]["nombre"] == "dweybull":
+        loc = distribucionesEquipos[equipo][estadistica][1]["loc"]
+        scale = distribucionesEquipos[equipo][estadistica][1]["scale"]
+        c = distribucionesEquipos[equipo][estadistica][1]["c"]
+        val = dweybull.rvs(c, loc, scale, size=1)
+
+    elif distribucionesEquipos[equipo]["nombre"] == "genextreme":
+        loc = distribucionesEquipos[equipo][estadistica][1]["loc"]
+        scale = distribucionesEquipos[equipo][estadistica][1]["scale"]
+        c = distribucionesEquipos[equipo][estadistica][1]["c"]
+        val = genextreme.rvs(c, loc, scale, size=1)
+
+    elif distribucionesEquipos[equipo]["nombre"] == "skewnorm":
+        loc = distribucionesEquipos[equipo][estadistica][1]["loc"]
+        scale = distribucionesEquipos[equipo][estadistica][1]["scale"]
+        a = distribucionesEquipos[equipo][estadistica][1]["a"]
+        val = skewnorm.rvs(a, loc, scale, size=1)
+
+    elif distribucionesEquipos[equipo]["nombre"] == "genlogistic":
+        loc = distribucionesEquipos[equipo][estadistica][1]["loc"]
+        scale = distribucionesEquipos[equipo][estadistica][1]["scale"]
+        c = distribucionesEquipos[equipo][estadistica][1]["c"]
+        val = genlogistic.rvs(c, loc, scale, size=1)
+
+    elif distribucionesEquipos[equipo]["nombre"] == "pearson3":
+        loc = distribucionesEquipos[equipo][estadistica][1]["loc"]
+        scale = distribucionesEquipos[equipo][estadistica][1]["scale"]
+        skew = distribucionesEquipos[equipo][estadistica][1]["skew"]
+        val = pearson3.rvs(skew, loc, scale, size=1)
+
+    elif distribucionesEquipos[equipo]["nombre"] == "laplace":
+        loc = distribucionesEquipos[equipo][estadistica][1]["loc"]
+        scale = distribucionesEquipos[equipo][estadistica][1]["scale"]
+        val = laplace.rvs(loc, scale, size=1)
+
+    elif distribucionesEquipos[equipo]["nombre"] == "powernorm":
+        loc = distribucionesEquipos[equipo][estadistica][1]["loc"]
+        scale = distribucionesEquipos[equipo][estadistica][1]["scale"]
+        c = distribucionesEquipos[equipo][estadistica][1]["c"]
+        val = powernorm.rvs(c, loc, scale, size=1)
+
+    elif distribucionesEquipos[equipo]["nombre"] == "exponnorm":
+        loc = distribucionesEquipos[equipo][estadistica][1]["loc"]
+        scale = distribucionesEquipos[equipo][estadistica][1]["scale"]
+        val = exponnorm.rvs(loc, scale, size=1)
+
+    elif distribucionesEquipos[equipo]["nombre"] == "normingvgauss":
+        loc = distribucionesEquipos[equipo][estadistica][1]["loc"]
+        scale = distribucionesEquipos[equipo][estadistica][1]["scale"]
+        a = distribucionesEquipos[equipo][estadistica][1]["a"]
+        b = distribucionesEquipos[equipo][estadistica][1]["b"]
+        val = normingvgauss.rvs(a, b, loc, scale, size=1)
+
+    elif distribucionesEquipos[equipo]["nombre"] == "johnsonsu":
+        loc = distribucionesEquipos[equipo][estadistica][1]["loc"]
+        scale = distribucionesEquipos[equipo][estadistica][1]["scale"]
+        a = distribucionesEquipos[equipo][estadistica][1]["a"]
+        b = distribucionesEquipos[equipo][estadistica][1]["b"]
+        val = johnsonsu.rvs(a, b, loc, scale, size=1)
+
+    elif distribucionesEquipos[equipo]["nombre"] == "cauchy":
+        loc = distribucionesEquipos[equipo][estadistica][1]["loc"]
+        scale = distribucionesEquipos[equipo][estadistica][1]["scale"]
+        val = cauchy.rvs(loc, scale, size=1)
+
+    elif distribucionesEquipos[equipo]["nombre"] == "tukeylambda":
+        loc = distribucionesEquipos[equipo][estadistica][1]["loc"]
+        scale = distribucionesEquipos[equipo][estadistica][1]["scale"]
+        lam = distribucionesEquipos[equipo][estadistica][1]["lam"]
+        val = tukeylambda.rvs(lam, loc, scale, size=1)
+
+    elif distribucionesEquipos[equipo]["nombre"] == "genhyperbolic":
+        loc = distribucionesEquipos[equipo][estadistica][1]["loc"]
+        scale = distribucionesEquipos[equipo][estadistica][1]["scale"]
+        p = distribucionesEquipos[equipo][estadistica][1]["p"]
+        a = distribucionesEquipos[equipo][estadistica][1]["a"]
+        b = distribucionesEquipos[equipo][estadistica][1]["b"]
+        val = genhyperbolic.rvs(p, a, b, loc, scale, size=1)
+
+    elif distribucionesEquipos[equipo]["nombre"] == "kappa4":
+        loc = distribucionesEquipos[equipo][estadistica][1]["loc"]
+        scale = distribucionesEquipos[equipo][estadistica][1]["scale"]
+        h = distribucionesEquipos[equipo][estadistica][1]["h"]
+        k = distribucionesEquipos[equipo][estadistica][1]["k"]
+        val = kappa4.rvs(h, k, loc, scale, size=1)
+
     elif distribucionesEquipos[equipo]["nombre"] == "laplace_asymmetric":
-        print("normal")
+        loc = distribucionesEquipos[equipo][estadistica][1]["loc"]
+        scale = distribucionesEquipos[equipo][estadistica][1]["scale"]
+        kappa = distribucionesEquipos[equipo][estadistica][1]["kappa"]
+        val = laplace_asymmetric.rvs(kappa, loc, scale, size=1)
+
     elif distribucionesEquipos[equipo]["nombre"] == "moyal":
-        print("normal")
+        loc = distribucionesEquipos[equipo][estadistica][1]["loc"]
+        scale = distribucionesEquipos[equipo][estadistica][1]["scale"]
+        val = moyal.rvs(loc, scale, size=1)
+
     elif distribucionesEquipos[equipo]["nombre"] == "t":
-        print("normal")
+        loc = distribucionesEquipos[equipo][estadistica][1]["loc"]
+        scale = distribucionesEquipos[equipo][estadistica][1]["scale"]
+        df = distribucionesEquipos[equipo][estadistica][1]["df"]
+        val = t.rvs(df, loc, scale, size=1)
+
     elif distribucionesEquipos[equipo]["nombre"] == "gennorm":
-        print("normal")
+        loc = distribucionesEquipos[equipo][estadistica][1]["loc"]
+        scale = distribucionesEquipos[equipo][estadistica][1]["scale"]
+        beta = distribucionesEquipos[equipo][estadistica][1]["beta"]
+        val = gennorm.rvs(beta, loc, scale, size=1)
+
     elif distribucionesEquipos[equipo]["nombre"] == "loggamma":
-        print("normal")
+        loc = distribucionesEquipos[equipo][estadistica][1]["loc"]
+        scale = distribucionesEquipos[equipo][estadistica][1]["scale"]
+        c = distribucionesEquipos[equipo][estadistica][1]["c"]
+        val = loggamma.rvs(c, loc, scale, size=1)
+
     elif distribucionesEquipos[equipo]["nombre"] == "nct":
-        print("normal")
+        loc = distribucionesEquipos[equipo][estadistica][1]["loc"]
+        scale = distribucionesEquipos[equipo][estadistica][1]["scale"]
+        df = distribucionesEquipos[equipo][estadistica][1]["df"]
+        nc = distribucionesEquipos[equipo][estadistica][1]["nc"]
+        val = nct.rvs(df, nc, loc, scale, size=1)
+
     elif distribucionesEquipos[equipo]["nombre"] == "crystalball":
-        print("normal")
+        loc = distribucionesEquipos[equipo][estadistica][1]["loc"]
+        scale = distribucionesEquipos[equipo][estadistica][1]["scale"]
+        beta = distribucionesEquipos[equipo][estadistica][1]["beta"]
+        m = distribucionesEquipos[equipo][estadistica][1]["m"]
+        val = crystalball.rvs(beta, m, loc, scale, size=1)
+
     elif distribucionesEquipos[equipo]["nombre"] == "truncnorm":
-        print("normal")
+        loc = distribucionesEquipos[equipo][estadistica][1]["loc"]
+        scale = distribucionesEquipos[equipo][estadistica][1]["scale"]
+        a = distribucionesEquipos[equipo][estadistica][1]["a"]
+        b = distribucionesEquipos[equipo][estadistica][1]["b"]
+        val = truncnorm.rvs(a, b, loc, scale, size=1)
+
     elif distribucionesEquipos[equipo]["nombre"] == "skewcauchy":
-        print("normal")
+        loc = distribucionesEquipos[equipo][estadistica][1]["loc"]
+        scale = distribucionesEquipos[equipo][estadistica][1]["scale"]
+        a = distribucionesEquipos[equipo][estadistica][1]["a"]
+        val = skewcauchy.rvs(a, scale, size=1)
+
     elif distribucionesEquipos[equipo]["nombre"] == "truncweibull_min":
-        print("normal")
+        loc = distribucionesEquipos[equipo][estadistica][1]["loc"]
+        scale = distribucionesEquipos[equipo][estadistica][1]["scale"]
+        c = distribucionesEquipos[equipo][estadistica][1]["p"]
+        a = distribucionesEquipos[equipo][estadistica][1]["a"]
+        b = distribucionesEquipos[equipo][estadistica][1]["b"]
+        val = truncweibull_min.rvs(c, a, b, loc, scale, size=1)
+
+    elif distribucionesEquipos[equipo]["nombre"] == "reciprocal":
+        loc = distribucionesEquipos[equipo][estadistica][1]["loc"]
+        scale = distribucionesEquipos[equipo][estadistica][1]["scale"]
+        a = distribucionesEquipos[equipo][estadistica][1]["a"]
+        b = distribucionesEquipos[equipo][estadistica][1]["b"]
+        val = reciprocal.rvs(a, b, loc, scale, size=1)
+
+    else:
+        loc = distribucionesEquipos[equipo][estadistica][1]["loc"]
+        scale = distribucionesEquipos[equipo][estadistica][1]["scale"]
+        val = norm.rvs(loc, scale, size=1)
+    return val
 
 
 def inicializarEquipos(nombreLocal, nombreVisitante):

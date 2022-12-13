@@ -1,6 +1,6 @@
 import pickle
 import csv
-import Estadistica
+from dependencias import Estadistica
 import numpy as np
 
 
@@ -191,7 +191,7 @@ def imprimirCSVEquipo():
 
 
 def ajustarDatos(nombre):
-    archivo = "Jugadores"
+    archivo = ""
     if nombre in equipos.keys :
         archivo = "Equipos"
     infile = open(archivo, "rb")
@@ -204,6 +204,21 @@ def ajustarDatos(nombre):
         distribucion[estadistica].append(elegirDistribucion(objeto[nombre]["Estadisticas"][estadistica])[0])
         distribucion[estadistica].append(elegirDistribucion(objeto[nombre]["Estadisticas"][estadistica])[1])
         distribucion[estadistica].append(objeto[nombre]["Estadisticas"][estadistica])
+    return distribucion
+
+
+def ajustarDatosJugadores():
+    infile = open("Jugadores", "rb")
+    objetos = pickle.load(infile)
+    infile.close()
+    distribucion = {}
+    for objeto in objetos:
+        distribucion[objeto] = {}
+        for estadistica in objetos[objeto]["Estadisticas"]:
+            distribucion[objeto][estadistica] = []
+            distribucion[objeto][estadistica].append(elegirDistribucion(objetos[objeto]["Estadisticas"][estadistica])[0])
+            distribucion[objeto][estadistica].append(elegirDistribucion(objetos[objeto]["Estadisticas"][estadistica])[1])
+            distribucion[objeto][estadistica].append(objetos[objeto]["Estadisticas"][estadistica])
     return distribucion
 
 
