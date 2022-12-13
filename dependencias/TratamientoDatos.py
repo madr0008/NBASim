@@ -38,7 +38,16 @@ equipos = {
 }
 
 
+def cargaDatosGeneral():
+    leerPartidos()
+    leerPartidosJugadores()
+    cambioClaves()
+
+
 def leerCSVJugadores():
+    infile = open("Equipos", "rb")
+    equipo = pickle.load(infile)
+    infile.close()
     datosJugador = {}
     with open('players.csv', newline='') as File:
         next(File)
@@ -48,9 +57,9 @@ def leerCSVJugadores():
                 break
             datos = {}
             datos["ID"] = row[2]
-            datos["Equipo"] = row[1]
+            datos["Equipo"] = equipo[row[1]]["NombreCompleto"]
             datos["Estadisticas"] = {"Minutos": [], "Puntos": [], "Asistencias": [], "Rebotes": [], "Robos": [], "Tiros": [],
-                                     "PorcentajeAciertos": [], "Triples": [], "PorcentajeTriples": []}
+                                     "PorcentajeAciertos": [], "Triples": [],"PorcentajeTriples": [] , "PorcentajeAciertoTriples": []}
             datosJugador[row[0]] = datos
         fichero_datos = open("Jugadores", "wb")
         pickle.dump(datosJugador, fichero_datos)
@@ -68,11 +77,11 @@ def leerCSVEquipos():
             datos["Abreviatura"] = row[4]
             datos["NombreCompleto"] = list(equipos.keys())[list(equipos.values()).index(row[4])]
             datos["Estadio"] = row[8]
-            datos["Estadisticas"] = {"Robos": [], "Faltas": [], "Rebotes": [], "TiempoPosesion" : []}
+            datos["Estadisticas"] = {"Robos": [],"PorcentajeRobos": [], "Faltas": [],"PorcentajeFaltas": [], "Rebotes": [], "PorcentajeRebote": [], "TiempoPosesion" : []}
             datosEquipo[row[1]] = datos
-        fichero_datos = open("Equipos", "wb")
-        pickle.dump(datosEquipo, fichero_datos)
-        fichero_datos.close()
+    fichero_datos = open("Equipos", "wb")
+    pickle.dump(datosEquipo, fichero_datos)
+    fichero_datos.close()
 
 
 def leerPartidos():
@@ -86,17 +95,24 @@ def leerPartidos():
         for row in reader:
             equipo[row[3]]["Estadisticas"]["Rebotes"].append(int(float(row[12])))
             equipo[row[4]]["Estadisticas"]["Rebotes"].append(int(float(row[19])))
+            equipo[row[3]]["Estadisticas"]["PorcentajeRebote"].append(int(float(row[12])) / (int(float(row[12])) + int(float(row[19]))))
+            equipo[row[4]]["Estadisticas"]["PorcentajeRebote"].append(int(float(row[19])) / (int(float(row[12])) + int(float(row[19]))))
+            equipo[row[3]]["Estadisticas"]["Asistencias"].append(int(float(row[11])))
+            equipo[row[4]]["Estadisticas"]["Asistencias"].append(int(float(row[18])))
         fichero_datos = open("Equipos", "wb")
         pickle.dump(equipo, fichero_datos)
         fichero_datos.close()
     leerEstadisticasIndividualesEquipo()
-    cambioClaves()
 
 
 def leerPartidosJugadores():
     leerCSVJugadores()
     infile = open("Jugadores", "rb")
     jugadores = pickle.load(infile)
+    infile.close()
+
+    infile = open("Equipos", "rb")
+    equipos = pickle.load(infile)
     infile.close()
     partidos = []
     with open('games_details.csv', newline='') as File:
@@ -114,19 +130,20 @@ def leerPartidosJugadores():
                 if row[27] != "":
                     jugadores[row[5]]["Estadisticas"]["Puntos"].append(int(float(row[27])))
                 if row[21] != "":
-                    jugadores[row[5]]["Estadisticas"]["Rebotes"].append(int(float(row[21])))
+                    jugadores[row[5]]["Estadisticas"]["Rebotes"].append(int(float(row[21])) / equipos[jugadores[row[5]]["Equipo"]]["Estadisticas"]["Rebotes"])
                 if row[22] != "":
-                    jugadores[row[5]]["Estadisticas"]["Asistencias"].append(int(float(row[22])))
+                    jugadores[row[5]]["Estadisticas"]["Asistencias"].append(int(float(row[22])) / equipos[jugadores[row[5]]["Equipo"]]["Estadisticas"]["Rebotes"])
                 if row[23] != "":
-                    jugadores[row[5]]["Estadisticas"]["Robos"].append(int(float(row[23])))
+                    jugadores[row[5]]["Estadisticas"]["Robos"].append(int(float(row[23])) / equipos[jugadores[row[5]]["Equipo"]]["Estadisticas"]["Rebotes"])
                 if row[11] != "":
                     jugadores[row[5]]["Estadisticas"]["Tiros"].append(int(float(row[11])))
                 if row[12] != "":
                     jugadores[row[5]]["Estadisticas"]["PorcentajeAciertos"].append(float(row[12]))
                 if row[14] != "":
                     jugadores[row[5]]["Estadisticas"]["Triples"].append(int(float(row[14])))
+                    jugadores[row[5]]["Estadisticas"]["PorcentajeTriples"].append(int(float(row[14])) / int(float(row[11])))
                 if row[15] != "":
-                    jugadores[row[5]]["Estadisticas"]["PorcentajeTriples"].append(float(row[15]))
+                    jugadores[row[5]]["Estadisticas"]["PorcentajeAciertoTriples"].append(float(row[15]))
         fichero_datos = open("Jugadores", "wb")
         pickle.dump(jugadores, fichero_datos)
         fichero_datos.close()
@@ -144,6 +161,13 @@ def cambioClaves():
         datos["Estadio"] = equipos[equipo]["Estadio"]
         datos["Estadisticas"] = equipos[equipo]["Estadisticas"]
         nuevoEquipos[equipos[equipo]["NombreCompleto"]] = datos
+    # Adición tiempo de posesion
+    with open('Datos_posesiones.csv', newline='') as File:
+        next(File)
+        next(File)
+        reader = csv.reader(File)
+        for row in reader:
+            nuevoEquipos[list(equipos.keys())[list(equipos.values()).index(row[1])]]["Estadisticas"]["TiempoPosesion"] = row[2]
     print(nuevoEquipos)
     fichero_datos = open("Equipos", "wb")
     pickle.dump(nuevoEquipos, fichero_datos)
@@ -158,15 +182,38 @@ def leerEstadisticasIndividualesEquipo():
         next(File)
         reader = csv.reader(File)
         equipo = ""
+        equipo2 = ""
         robos = 0
         faltas = 0
+        iterador = 0
         for row in reader:
-            if row[1] != equipo and equipo != "":
+            if row[1] != equipo2 and equipo2 != "":
+                equipos[equipo2]["Estadisticas"]["Robos"].append(robos)
+                equipos[equipo2]["Estadisticas"]["Faltas"].append(faltas)
+                if robos == 0:
+                    equipos[equipo2]["Estadisticas"]["PorcentajeRobos"].append(robos)
+                else:
+                    equipos[equipo2]["Estadisticas"]["PorcentajeRobos"].append(robos / (robos + equipos[equipo]["Estadisticas"]["Robos"][len(equipos[equipo]["Estadisticas"]["Robos"]) - 1]))
+                equipos[equipo2]["Estadisticas"]["porcentajeFaltas"].append(faltas / (faltas + equipos[equipo]["Estadisticas"]["Faltas"][len(equipos[equipo]["Estadisticas"]["Faltas"]) - 1]))
+                if  equipos[equipo]["Estadisticas"]["Robos"][len(equipos[equipo]["Estadisticas"]["Robos"]) - 1] != 0:
+                    equipos[equipo]["Estadisticas"]["PorcentajeRobos"][len(equipos[equipo]["Estadisticas"]["Robos"]) - 1].append(
+                        equipos[equipo]["Estadisticas"]["Robos"][len(equipos[equipo]["Estadisticas"]["Robos"]) - 1] / (robos + equipos[equipo]["Estadisticas"]["Robos"][len(equipos[equipo]["Estadisticas"]["Robos"]) - 1]))
+                equipos[equipo]["Estadisticas"]["PorcentajeFaltas"][len(equipos[equipo]["Estadisticas"]["Faltas"]) - 1].append(
+                    equipos[equipo]["Estadisticas"]["Faltas"][len(equipos[equipo]["Estadisticas"]["Faltas"]) - 1] / (robos + equipos[equipo]["Estadisticas"]["Faltas"][len(equipos[equipo]["Estadisticas"]["Faltas"]) - 1]))
+                robos = 0
+                faltas = 0
+                equipo = ""
+                equipo2 = ""
+                iterador = 0
+            elif row[1] != equipo and equipo != "" and equipo2 == "":
+                equipo2 = row[1]
                 equipos[equipo]["Estadisticas"]["Robos"].append(robos)
                 equipos[equipo]["Estadisticas"]["Faltas"].append(faltas)
                 robos = 0
                 faltas = 0
-            equipo = row[1]
+            if iterador == 0:
+                equipo = row[1]
+                iterador += 1
             if row[23] != "":
                 robos += int(float(row[23]))
             if row[26] != "":
@@ -207,18 +254,19 @@ def ajustarDatos(nombre):
     return distribucion
 
 
-def ajustarDatosJugadores():
+def ajustarDatosJugadores(equipoLocal,equipoVisitante):
     infile = open("Jugadores", "rb")
     objetos = pickle.load(infile)
     infile.close()
     distribucion = {}
     for objeto in objetos:
-        distribucion[objeto] = {}
-        for estadistica in objetos[objeto]["Estadisticas"]:
-            distribucion[objeto][estadistica] = []
-            distribucion[objeto][estadistica].append(elegirDistribucion(objetos[objeto]["Estadisticas"][estadistica])[0])
-            distribucion[objeto][estadistica].append(elegirDistribucion(objetos[objeto]["Estadisticas"][estadistica])[1])
-            distribucion[objeto][estadistica].append(objetos[objeto]["Estadisticas"][estadistica])
+        if objetos[objeto]["Equipo"] == equipoLocal or objetos[objeto]["Equipo"] == equipoVisitante:
+            distribucion[objeto] = {}
+            for estadistica in objetos[objeto]["Estadisticas"]:
+                distribucion[objeto][estadistica] = []
+                distribucion[objeto][estadistica].append(elegirDistribucion(objetos[objeto]["Estadisticas"][estadistica])[0])
+                distribucion[objeto][estadistica].append(elegirDistribucion(objetos[objeto]["Estadisticas"][estadistica])[1])
+                distribucion[objeto][estadistica].append(objetos[objeto]["Estadisticas"][estadistica])
     return distribucion
 
 

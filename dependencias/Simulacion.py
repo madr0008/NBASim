@@ -21,15 +21,13 @@ def simularPartido(nombreEquipo, nombreEquipo2):
 
     distribucionesEquipos[nombreEquipo[1]] = TratamientoDatos.ajustarDatos(nombreEquipo[1])
     distribucionesEquipos[nombreEquipo2[1]] = TratamientoDatos.ajustarDatos(nombreEquipo2[1])
-    distribucionesJugadores = TratamientoDatos.ajustarDatos("Jugadores")
-    inicializarEquipos(nombreEquipo[1],nombreEquipo2[1])
-    inicializarJugadores(nombreEquipo[1],nombreEquipo2[1])
+    distribucionesJugadores = TratamientoDatos.ajustarDatosJugadores(nombreEquipo[1],nombreEquipo2[1])
+    inicializarEquipos(nombreEquipo[1], nombreEquipo2[1])
+    inicializarJugadores(nombreEquipo[1], nombreEquipo2[1])
     tiempo = 720
     cuarto = 1
     saque = 0
     maximo = 24
-    falta = False
-    tiempoUsado = 0
     while tiempo > 0 and cuarto != 4:
 
         if cuarto == 1 and tiempo == 720:
@@ -57,7 +55,7 @@ def simularPartido(nombreEquipo, nombreEquipo2):
 
         if tiempo >= 0:
             # Desarrollo de la jugada
-            jugador, robo,falta = jugada(equipo)
+            jugador, robo, falta = jugada(equipo)
             if robo:
                 maximo = 24
                 equipo = (equipo + equipo) % 2
@@ -95,22 +93,28 @@ def simularPartido(nombreEquipo, nombreEquipo2):
 
 def saltoInicial():
     # Simular salto inicial probabilidad 50% ambos equipos
-    return random.randint(0,1)
+    return random.randint(0, 1)
 
 
 def jugada(equipo):
     # Simular jugada
-    if robo():
+    if robo((equipo + equipo)  % 2):
         return "",True,False
     else:
-        if falta():
+        if falta(equipo):
             return "",False,True
         else:
             jugador = asistencia(equipo)
     return jugador,False,False
 
 
-def robo():
+def robo(equipo):
+    valor = aplicaDistribucionEquipo(equipo, "Robo")
+    return True
+
+
+def falta(equipo):
+    valor = aplicaDistribucionEquipo(equipo, "Falta")
     return True
 
 
@@ -121,11 +125,10 @@ def asistencia(equipo):
 def tiempoPosesion(equipo, tiempo):
     if tiempo <= 2:
         return -1
-    #sino devolvemos la normal con maximo el tiempo restante
+
+    # sino devolvemos la normal con maximo el tiempo restante
     elif tiempo >= 24:
         return 1
-
-    return norm.rvs(loc,scale,size=1)
 
 
 def tiro(jugador):
@@ -139,7 +142,7 @@ def tiro(jugador):
 
 def rebote(equipo):
     # Simular rebote
-    valor = aplicarDistribucionEquipo(equipo,"Rebote")
+    valor = aplicaDistribucionEquipo(equipo,"Rebote")
     return valor
 
 
@@ -182,7 +185,7 @@ def aplicaDistribucionJugador(jugador, estadistica):
         a = distribucionesJugadores[jugador][estadistica][1]["a"]
         val = dgamma.rvs(a,loc, scale, size=1)
 
-    elif distribucionesJugadores[jugador]["nombre"] == "hypsecant":
+    elif distribucionesJugadores[jugador]["nombre"] == 'hypsecant':
         loc = distribucionesJugadores[jugador][estadistica][1]["loc"]
         scale = distribucionesJugadores[jugador][estadistica][1]["scale"]
         val = hypsecant.rvs(loc, scale, size=1)
@@ -191,7 +194,7 @@ def aplicaDistribucionJugador(jugador, estadistica):
         loc = distribucionesJugadores[jugador][estadistica][1]["loc"]
         scale = distribucionesJugadores[jugador][estadistica][1]["scale"]
         c = distribucionesJugadores[jugador][estadistica][1]["c"]
-        val = dweybull.rvs(c, loc, scale, size=1)
+        val = weibull_max.rvs(c, loc, scale, size=1)
 
     elif distribucionesJugadores[jugador]["nombre"] == "genextreme":
         loc = distribucionesJugadores[jugador][estadistica][1]["loc"]
@@ -233,12 +236,12 @@ def aplicaDistribucionJugador(jugador, estadistica):
         scale = distribucionesJugadores[jugador][estadistica][1]["scale"]
         val = exponnorm.rvs(loc, scale, size=1)
 
-    elif distribucionesJugadores[jugador]["nombre"] == "normingvgauss":
+    elif distribucionesJugadores[jugador]["nombre"] == "norminvgauss":
         loc = distribucionesJugadores[jugador][estadistica][1]["loc"]
         scale = distribucionesJugadores[jugador][estadistica][1]["scale"]
         a = distribucionesJugadores[jugador][estadistica][1]["a"]
         b = distribucionesJugadores[jugador][estadistica][1]["b"]
-        val = normingvgauss.rvs(a,b,loc, scale, size=1)
+        val = norminvgauss.rvs(a,b,loc, scale, size=1)
 
     elif distribucionesJugadores[jugador]["nombre"] == "johnsonsu":
         loc = distribucionesJugadores[jugador][estadistica][1]["loc"]
@@ -389,7 +392,7 @@ def aplicaDistribucionEquipo(equipo, estadistica):
         loc = distribucionesEquipos[equipo][estadistica][1]["loc"]
         scale = distribucionesEquipos[equipo][estadistica][1]["scale"]
         c = distribucionesEquipos[equipo][estadistica][1]["c"]
-        val = dweybull.rvs(c, loc, scale, size=1)
+        val = weibull_max.rvs(c, loc, scale, size=1)
 
     elif distribucionesEquipos[equipo]["nombre"] == "genextreme":
         loc = distribucionesEquipos[equipo][estadistica][1]["loc"]
@@ -431,12 +434,12 @@ def aplicaDistribucionEquipo(equipo, estadistica):
         scale = distribucionesEquipos[equipo][estadistica][1]["scale"]
         val = exponnorm.rvs(loc, scale, size=1)
 
-    elif distribucionesEquipos[equipo]["nombre"] == "normingvgauss":
+    elif distribucionesEquipos[equipo]["nombre"] == "norminvgauss":
         loc = distribucionesEquipos[equipo][estadistica][1]["loc"]
         scale = distribucionesEquipos[equipo][estadistica][1]["scale"]
         a = distribucionesEquipos[equipo][estadistica][1]["a"]
         b = distribucionesEquipos[equipo][estadistica][1]["b"]
-        val = normingvgauss.rvs(a, b, loc, scale, size=1)
+        val = norminvgauss.rvs(a, b, loc, scale, size=1)
 
     elif distribucionesEquipos[equipo]["nombre"] == "johnsonsu":
         loc = distribucionesEquipos[equipo][estadistica][1]["loc"]
