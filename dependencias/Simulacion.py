@@ -9,15 +9,18 @@ distribucionesJugadores = {}
 
 estadisticasJugadores = {"Equipo" :
                              {"Nombre":
-                                { "Equipo" : "", "ID" : 0, "Estadisticas" :
-                                    { "Puntos": 0, "Asistencias": 0, "Rebotes": 0, "Robos": 0, "Tiros Anotados": 0, "Tiros": 0, "Triples Anotados": 0, "Triples": 0 } }}}
+                                {"Estadisticas" :
+                                    { },
+                                 "EstadisticasPartido" :
+                                     { "Puntos": 0, "Asistencias": 0, "Rebotes": 0, "Robos": 0, "Tiros Anotados": 0, "Tiros": 0, "Triples Anotados": 0, "Triples": 0 }
+                                 }}}
 
-estadisticasEquipos = {"Nombre" :
-                           { "Puntos": 0, "Rebotes": 0, "Faltas": 0 }}
+estadisticasEquipos = {}
 
+equipoOrden = []
 
 def simularPartido(nombreEquipo, nombreEquipo2):
-    global distribucionesEquipos; global distribucionesJugadores
+    global distribucionesEquipos; global distribucionesJugadores; global equipoOrden
 
     distribucionesEquipos[nombreEquipo[1]] = TratamientoDatos.ajustarDatos(nombreEquipo[1])
     distribucionesEquipos[nombreEquipo2[1]] = TratamientoDatos.ajustarDatos(nombreEquipo2[1])
@@ -34,6 +37,7 @@ def simularPartido(nombreEquipo, nombreEquipo2):
 
             # Equipo es un valor 0 o 1 según el equipo correspondiente, si necesitamos el nombre con valor 0 es equipo y con valor 1 es equipo2
             equipo = saltoInicial()
+            equipoOrden = [nombreEquipo[1],nombreEquipo2[2]]
             # determinamos el equipo que saltara el siguiente cuarto
             saque = (equipo + equipo) % 2
 
@@ -44,9 +48,9 @@ def simularPartido(nombreEquipo, nombreEquipo2):
 
         # Se reduce el tiempo de posesión del reloj
         if tiempo > 24:
-            tiempoUsado = tiempoPosesion(equipo, maximo)
+            tiempoUsado = tiempoPosesion(equipoOrden[equipo], maximo)
         else:
-            tiempoUsado = tiempoPosesion(equipo, tiempo)
+            tiempoUsado = tiempoPosesion(equipoOrden[equipo], tiempo)
 
         if tiempoUsado == -1:
             tiempo = -1
@@ -55,23 +59,23 @@ def simularPartido(nombreEquipo, nombreEquipo2):
 
         if tiempo >= 0:
             # Desarrollo de la jugada
-            jugador, robo, falta = jugada(equipo)
-            if robo:
+            jugador, jugadorAsiste, roboRealizado, faltaRealizada = jugada(equipo)
+            if roboRealizado:
                 maximo = 24
                 equipo = (equipo + equipo) % 2
             else:
-                if falta and tiempoUsado > 10:
+                if faltaRealiza and tiempoUsado > 10:
                     maximo = 14
-                elif falta and tiempoUsado < 10:
+                elif faltaRealizada and tiempoUsado < 10:
                     maximo = maximo - tiempoUsado
                 else:
                     # Desarrollo del tiro
-                    acierto = tiro(jugador)
+                    acierto = tiro(jugador,jugadorAsiste,equipoOrden[equipo])
 
                     # Si se falla el tiro se juega el rebote
                     if not acierto:
-                        jugador = rebote(equipo)
-                        if jugador in equipo:
+                        reboteCogido = rebote(equipoOrden[equipo], equipoOrden[(equipo + equipo) % 2])
+                        if reboteCogido:
                             maximo = 14
                             # juega el mismo equipo el balón
                         else:
@@ -97,29 +101,62 @@ def saltoInicial():
 
 
 def jugada(equipo):
+    global equipoOrden
     # Simular jugada
-    if robo((equipo + equipo)  % 2):
-        return "",True,False
+    if robo(equipoOrden[(equipo + equipo)  % 2]):
+        return "","",True,False
     else:
-        if falta(equipo):
-            return "",False,True
+        if falta(equipoOrden[equipo]):
+            return "","",False,True
         else:
-            jugador = asistencia(equipo)
-    return jugador,False,False
+            jugador,jugadorAsiste = asistencia(equipo)
+    return jugador,jugadorAsiste,False,False
 
 
 def robo(equipo):
     valor = aplicaDistribucionEquipo(equipo, "Robo")
-    return True
+    resultado = random.random()
+    if resultado < valor:
+        #decidir el jugador que suma la estadistica
+        return True
+    return False
 
 
 def falta(equipo):
     valor = aplicaDistribucionEquipo(equipo, "Falta")
-    return True
+    resultado = random.random()
+    if resultado < valor:
+        #decidir el jugador que suma la estadistica
+        return True
+    return False
 
 
 def asistencia(equipo):
-    return ""
+    # Decidir quien hace la asistencia, se genera un valor para cada jugador el mas alto asiste
+    maximo = 0
+    elegido = ""
+    elegidoTiro = ""
+    for jugador in equipo:
+        valor = aplicaDistribucionJugador(jugador,"Asistencia")
+        if valor > maximo:
+            maximo = valor
+            elegido = jugador
+    resultado = random.random()
+
+    # Se realiza la asistencia
+    if resultado < maximo:
+        # Decidir el jugador que realizara el tiro
+        maximo = 0
+        for jugador in equipo:
+            if jugador != elegido:
+                valor = aplicaDistribucionJugador(jugador,"ProbabilidadTiro")
+                if valor > maximo:
+                    maximo = valor
+                    elegidoTiro = jugador
+    # No se realiza asistencia tira el jugador que tiene la bola
+    else:
+        elegidoTiro = elegido
+    return elegidoTiro,elegido
 
 
 def tiempoPosesion(equipo, tiempo):
@@ -131,19 +168,47 @@ def tiempoPosesion(equipo, tiempo):
         return 1
 
 
-def tiro(jugador):
-    # Simular tiro
-    valor = aplicaDistribucionJugador(jugador,"PorcentajeAciertos")
+def tiro(jugador, jugadorAsistencia, equipo):
+    global estadisticasJugadores
+    # Decidir si el tiro es de dos o de tres
+    valor = aplicaDistribucionJugador(jugador,"PorcentajeTriples")
     resultado = random.random()
+    if valor > resultado:
+        tiro = 3
+        estadisticasJugadores[equipo][jugador]["EstadisticasPartido"]["Tiros"] += 1
+        estadisticasJugadores[equipo][jugador]["EstadisticasPartido"]["Triples"] += 1
+        valor = aplicaDistribucionJugador(jugador, "PorcentajeAciertoTriples")
+    else:
+        tiro = 2
+        estadisticasJugadores[equipo][jugador]["EstadisticasPartido"]["Tiros"] += 1
+        # Simular tiro
+        valor = aplicaDistribucionJugador(jugador,"PorcentajeAciertos")
+    resultado = random.random()
+
     if resultado > valor:
         return False
+
+    # Sumar estadistica al jugador
+    if jugador != jugadorAsistencia:
+        estadisticasJugadores[equipo][jugadorAsiste]["EstadisticasPartido"]["Asistencia"] += 1
+    estadisticasJugadores[equipo][jugador]["EstadisticasPartido"]["TirosAnotados"] += 1
+    estadisticasJugadores[equipo][jugador]["EstadisticasPartido"]["Puntos"] += tiro
+    if tiro == 3:
+        estadisticasJugadores[equipo][jugador]["EstadisticasPartido"]["TriplesAnotado"] += 1
+
     return True
 
 
-def rebote(equipo):
+def rebote(equipoPosesion, equipoDefiende):
     # Simular rebote
-    valor = aplicaDistribucionEquipo(equipo,"Rebote")
-    return valor
+    valor = aplicaDistribucionEquipo(equipoPosesion,"Rebote")
+    valor2 = aplicaDistribucionEquipo(equipoDefiende,"Rebote")
+    if valor2 < valor:
+        # decidir el jugador que suma la estadistica
+        return True
+
+    # decidir el jugador que suma la estadistica
+    return False
 
 
 def finCuarto():
@@ -553,8 +618,22 @@ def aplicaDistribucionEquipo(equipo, estadistica):
 
 
 def inicializarEquipos(nombreLocal, nombreVisitante):
-    return 1
+    global estadisticasEquipos
+
+    estadisticasEquipos[nombreLocal] = { "Puntos": 0, "Rebotes": 0, "Faltas": 0,  }
+    estadisticasEquipos[nombreVisitante] = { "Puntos": 0, "Rebotes": 0, "Faltas": 0 }
 
 
 def inicializarJugadores(nombreLocal, nombreVisitante):
-    return 1
+    global estadisticasJugadores
+
+    infile = open("Jugadores", "rb")
+    jugadores = pickle.load(infile)
+    infile.close()
+    for jugador in jugadores:
+        if jugadores[jugador]["Equipo"] == nombreLocal:
+            estadisticasJugadores[nombreLocal][jugador] = \
+                {"Estadisticas" : { jugadores[jugador]["Estadisticas"] },
+                 "EstadisticasPartido" :
+                     { "Puntos": 0, "Asistencias": 0, "Rebotes": 0, "Robos": 0, "Tiros Anotados": 0, "Tiros": 0, "Triples Anotados": 0, "Triples": 0 }
+                }

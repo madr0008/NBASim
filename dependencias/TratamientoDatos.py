@@ -58,7 +58,7 @@ def leerCSVJugadores():
             datos = {}
             datos["ID"] = row[2]
             datos["Equipo"] = equipo[row[1]]["NombreCompleto"]
-            datos["Estadisticas"] = {"Minutos": [], "Puntos": [], "Asistencias": [], "Rebotes": [], "Robos": [], "Tiros": [],
+            datos["Estadisticas"] = {"Minutos": [], "Puntos": [], "Asistencias": [], "Rebotes": [], "Robos": [], "Tiros": [], "ProbabilidadTiro": [],
                                      "PorcentajeAciertos": [], "Triples": [],"PorcentajeTriples": [] , "PorcentajeAciertoTriples": []}
             datosJugador[row[0]] = datos
         fichero_datos = open("Jugadores", "wb")
@@ -77,7 +77,7 @@ def leerCSVEquipos():
             datos["Abreviatura"] = row[4]
             datos["NombreCompleto"] = list(equipos.keys())[list(equipos.values()).index(row[4])]
             datos["Estadio"] = row[8]
-            datos["Estadisticas"] = {"Robos": [],"PorcentajeRobos": [], "Faltas": [],"PorcentajeFaltas": [], "Rebotes": [], "PorcentajeRebote": [], "TiempoPosesion" : []}
+            datos["Estadisticas"] = {"Tiros": [], "Robos": [],"PorcentajeRobos": [], "Faltas": [],"PorcentajeFaltas": [], "Rebotes": [], "PorcentajeRebote": [], "TiempoPosesion" : []}
             datosEquipo[row[1]] = datos
     fichero_datos = open("Equipos", "wb")
     pickle.dump(datosEquipo, fichero_datos)
@@ -115,11 +115,14 @@ def leerPartidosJugadores():
     equipos = pickle.load(infile)
     infile.close()
     partidos = []
-    with open('games_details.csv', newline='') as File:
+    iterador = {}
+    for equipo in equipos:
+        iterador[equipo] = 0
+    with open('games.csv', newline='') as File:
         next(File)
         reader = csv.reader(File)
         for row in reader:
-            partidos.append(row[0])
+            partidos.append(row[1])
     with open('games_details.csv', newline='') as File:
         next(File)
         reader = csv.reader(File)
@@ -130,13 +133,14 @@ def leerPartidosJugadores():
                 if row[27] != "":
                     jugadores[row[5]]["Estadisticas"]["Puntos"].append(int(float(row[27])))
                 if row[21] != "":
-                    jugadores[row[5]]["Estadisticas"]["Rebotes"].append(int(float(row[21])) / equipos[jugadores[row[5]]["Equipo"]]["Estadisticas"]["Rebotes"])
+                    jugadores[row[5]]["Estadisticas"]["Rebotes"].append(int(float(row[21])) / equipos[jugadores[row[5]]["Equipo"]]["Estadisticas"]["Rebotes"][iterador[jugadores[row[5]]["Equipo"]]])
                 if row[22] != "":
-                    jugadores[row[5]]["Estadisticas"]["Asistencias"].append(int(float(row[22])) / equipos[jugadores[row[5]]["Equipo"]]["Estadisticas"]["Rebotes"])
+                    jugadores[row[5]]["Estadisticas"]["Asistencias"].append(int(float(row[22])) / equipos[jugadores[row[5]]["Equipo"]]["Estadisticas"]["Asistencias"][iterador[jugadores[row[5]]["Equipo"]]])
                 if row[23] != "":
-                    jugadores[row[5]]["Estadisticas"]["Robos"].append(int(float(row[23])) / equipos[jugadores[row[5]]["Equipo"]]["Estadisticas"]["Rebotes"])
+                    jugadores[row[5]]["Estadisticas"]["Robos"].append(int(float(row[23])) / equipos[jugadores[row[5]]["Equipo"]]["Estadisticas"]["Robos"][iterador[jugadores[row[5]]["Equipo"]]])
                 if row[11] != "":
                     jugadores[row[5]]["Estadisticas"]["Tiros"].append(int(float(row[11])))
+                    jugadores[row[5]]["Estadisticas"]["ProbabilidadTiro"].append(int(float(row[11])) / equipos[jugadores[row[5]]["Equipo"]]["Estadisticas"]["Tiros"][iterador[jugadores[row[5]]["Equipo"]]])
                 if row[12] != "":
                     jugadores[row[5]]["Estadisticas"]["PorcentajeAciertos"].append(float(row[12]))
                 if row[14] != "":
@@ -144,6 +148,7 @@ def leerPartidosJugadores():
                     jugadores[row[5]]["Estadisticas"]["PorcentajeTriples"].append(int(float(row[14])) / int(float(row[11])))
                 if row[15] != "":
                     jugadores[row[5]]["Estadisticas"]["PorcentajeAciertoTriples"].append(float(row[15]))
+            iterador[jugadores[row[5]]["Equipo"]] += 1
         fichero_datos = open("Jugadores", "wb")
         pickle.dump(jugadores, fichero_datos)
         fichero_datos.close()
@@ -185,11 +190,13 @@ def leerEstadisticasIndividualesEquipo():
         equipo2 = ""
         robos = 0
         faltas = 0
+        tiros = 0
         iterador = 0
         for row in reader:
             if row[1] != equipo2 and equipo2 != "":
                 equipos[equipo2]["Estadisticas"]["Robos"].append(robos)
                 equipos[equipo2]["Estadisticas"]["Faltas"].append(faltas)
+                equipos[equipo2]["Estadisticas"]["Tiros"].append(tiros)
                 if robos == 0:
                     equipos[equipo2]["Estadisticas"]["PorcentajeRobos"].append(robos)
                 else:
@@ -202,6 +209,7 @@ def leerEstadisticasIndividualesEquipo():
                     equipos[equipo]["Estadisticas"]["Faltas"][len(equipos[equipo]["Estadisticas"]["Faltas"]) - 1] / (robos + equipos[equipo]["Estadisticas"]["Faltas"][len(equipos[equipo]["Estadisticas"]["Faltas"]) - 1]))
                 robos = 0
                 faltas = 0
+                tiros = 0
                 equipo = ""
                 equipo2 = ""
                 iterador = 0
@@ -209,8 +217,10 @@ def leerEstadisticasIndividualesEquipo():
                 equipo2 = row[1]
                 equipos[equipo]["Estadisticas"]["Robos"].append(robos)
                 equipos[equipo]["Estadisticas"]["Faltas"].append(faltas)
+                equipos[equipo]["Estadisticas"]["Tiros"].append(tiros)
                 robos = 0
                 faltas = 0
+                tiros = 0
             if iterador == 0:
                 equipo = row[1]
                 iterador += 1
@@ -218,6 +228,8 @@ def leerEstadisticasIndividualesEquipo():
                 robos += int(float(row[23]))
             if row[26] != "":
                 faltas += int(float(row[26]))
+            if row[11] != "":
+                tiros += int(float(row[11]))
     fichero_datos = open("Equipos", "wb")
     pickle.dump(equipos, fichero_datos)
     fichero_datos.close()
