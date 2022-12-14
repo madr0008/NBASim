@@ -18,11 +18,17 @@ tiempoParaTiro = 2
 
 def simularPartido(nombreEquipo, nombreEquipo2):
     global distribucionesEquipos; global distribucionesJugadores; global equipoOrden; global tiempoParaTiro
-
+    print("Empieza")
     TratamientoDatos.cargaDatosGeneral()
+    print("Paso 1")
     distribucionesEquipos[nombreEquipo[1]] = TratamientoDatos.ajustarDatos(nombreEquipo[1], tiempoParaTiro, 24)
+    print("Paso 2")
+    print(nombreEquipo[1])
+    print(nombreEquipo2[1])
     distribucionesEquipos[nombreEquipo2[1]] = TratamientoDatos.ajustarDatos(nombreEquipo2[1], tiempoParaTiro, 24)
-    distribucionesJugadores = TratamientoDatos.ajustarDatosJugadores(nombreEquipo[1],nombreEquipo2[1])
+    print("Paso 3")
+    distribucionesJugadores = TratamientoDatos.ajustarDatosJugadores(nombreEquipo[1], nombreEquipo2[1])
+    print("Paso 4")
     inicializarEquipos(nombreEquipo[1], nombreEquipo2[1])
     inicializarJugadores(nombreEquipo[1], nombreEquipo2[1])
     tiempo = 720
@@ -30,6 +36,8 @@ def simularPartido(nombreEquipo, nombreEquipo2):
     saque = 0
     maximo = 24
     while tiempo > 0 and cuarto != 4:
+
+        print("\n\n" + str(tiempo) + "segundos del cuarto " + str(cuarto))
 
         if cuarto == 1 and tiempo == 720:
 
@@ -39,11 +47,13 @@ def simularPartido(nombreEquipo, nombreEquipo2):
             equipoOrden.append(nombreEquipo2[1])
             # determinamos el equipo que saltara el siguiente cuarto
             saque = (equipo + equipo) % 2
+            print("Saca el equipo " + equipo)
 
         elif tiempo == 720:
 
             equipo = saque  # se selecciona el equipo al que le toca sacar de inicio
             saque = (saque + saque) % 2
+            print("Saca " + equipoOrden[equipo])
 
         # Se reduce el tiempo de posesión del reloj
         if tiempo > 24:
@@ -53,20 +63,27 @@ def simularPartido(nombreEquipo, nombreEquipo2):
 
         if tiempoUsado == -1:
             tiempo = -1
+            print("No hay tiempo para mas!")
         else:
             tiempo -= tiempoUsado
 
         if tiempo >= 0:
+
+            print("La jugada dura " + str(tiempo) + " segundos")
+
             # Desarrollo de la jugada
             jugador, jugadorAsiste, roboRealizado, faltaRealizada = jugada(equipo)
             if roboRealizado:
                 maximo = 24
                 equipo = (equipo + equipo) % 2
+                print("Roba " + equipoOrden[equipo])
             else:
                 if faltaRealizada and tiempoUsado > 10:
                     maximo = 14
+                    print("Falta de " + equipoOrden[equipo] + ". Quedan " + str(maximo) + " segundos")
                 elif faltaRealizada and tiempoUsado < 10:
                     maximo = maximo - tiempoUsado
+                    print("Falta de " + equipoOrden[equipo] + ". Quedan " + str(maximo) + " segundos")
                 else:
                     # Desarrollo del tiro
                     acierto = tiro(jugador,jugadorAsiste,equipoOrden[equipo])
@@ -76,18 +93,22 @@ def simularPartido(nombreEquipo, nombreEquipo2):
                         reboteCogido = rebote(equipoOrden[equipo], equipoOrden[(equipo + equipo) % 2])
                         if reboteCogido:
                             maximo = 14
+                            print("Fallo de " + jugador + ". Rebote para " + equipoOrden[equipo])
                             # juega el mismo equipo el balón
                         else:
                             maximo = 24
                             equipo = (equipo + equipo) % 2
+                            print("Fallo de " + jugador + ". Rebote para " + equipoOrden[equipo])
                             # empieza una nueva posesión del rival
 
         # Si fin de cuarto se sacan los datos del mismo
         if tiempo <= 0:
             finCuarto()
+            print("Se acaba el cuarto " + str(cuarto))
             # Si fin del último cuarto se sacan los datos del partido
             if cuarto == 4:
                 finPartido()
+                print("Se acaba el partido")
             # Sino se empieza un nuevo cuarto
             else:
                 cuarto += 1

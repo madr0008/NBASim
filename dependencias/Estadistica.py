@@ -169,6 +169,7 @@ def comparar_distribuciones(x, familia='realall', ordenar='aic', verbose=True):
     bic_ = []
     n_parametros_ = []
     parametros_ = []
+    resultados = pd.DataFrame()
 
     for i, distribucion in enumerate(distribuciones):
 
