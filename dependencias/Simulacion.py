@@ -1,4 +1,5 @@
 # Librerias
+import pickle
 from dependencias import TratamientoDatos
 from scipy.stats import *
 import random
@@ -19,11 +20,13 @@ estadisticasEquipos = {}
 
 equipoOrden = []
 
-def simularPartido(nombreEquipo, nombreEquipo2):
-    global distribucionesEquipos; global distribucionesJugadores; global equipoOrden
+tiempoParaTiro = 2
 
-    distribucionesEquipos[nombreEquipo[1]] = TratamientoDatos.ajustarDatos(nombreEquipo[1])
-    distribucionesEquipos[nombreEquipo2[1]] = TratamientoDatos.ajustarDatos(nombreEquipo2[1])
+def simularPartido(nombreEquipo, nombreEquipo2):
+    global distribucionesEquipos; global distribucionesJugadores; global equipoOrden; global tiempoParaTiro
+
+    distribucionesEquipos[nombreEquipo[1]] = TratamientoDatos.ajustarDatos(nombreEquipo[1], tiempoParaTiro, 24)
+    distribucionesEquipos[nombreEquipo2[1]] = TratamientoDatos.ajustarDatos(nombreEquipo2[1], tiempoParaTiro, 24)
     distribucionesJugadores = TratamientoDatos.ajustarDatosJugadores(nombreEquipo[1],nombreEquipo2[1])
     inicializarEquipos(nombreEquipo[1], nombreEquipo2[1])
     inicializarJugadores(nombreEquipo[1], nombreEquipo2[1])
@@ -64,7 +67,7 @@ def simularPartido(nombreEquipo, nombreEquipo2):
                 maximo = 24
                 equipo = (equipo + equipo) % 2
             else:
-                if faltaRealiza and tiempoUsado > 10:
+                if faltaRealizada and tiempoUsado > 10:
                     maximo = 14
                 elif faltaRealizada and tiempoUsado < 10:
                     maximo = maximo - tiempoUsado
@@ -160,12 +163,15 @@ def asistencia(equipo):
 
 
 def tiempoPosesion(equipo, tiempo):
-    if tiempo <= 2:
+    
+    global tiempoParaTiro
+
+    if tiempo <= tiempoParaTiro:
         return -1
 
-    # sino devolvemos la normal con maximo el tiempo restante
+    # sino devolvemos un dato generado por una función de distribución triangular
     elif tiempo >= 24:
-        return 1
+        return round(aplicaDistribucionEquipo(equipo, "TiempoPosesion"))
 
 
 def tiro(jugador, jugadorAsistencia, equipo):
@@ -397,13 +403,13 @@ def aplicaDistribucionJugador(jugador, estadistica):
         a = distribucionesJugadores[jugador][estadistica][1]["a"]
         val = skewcauchy.rvs(a, scale, size=1)
 
-    elif distribucionesJugadores[jugador]["nombre"] == "truncweibull_min":
+    elif distribucionesJugadores[jugador]["nombre"] == "weibull_min":
         loc = distribucionesJugadores[jugador][estadistica][1]["loc"]
         scale = distribucionesJugadores[jugador][estadistica][1]["scale"]
         c = distribucionesJugadores[jugador][estadistica][1]["p"]
         a = distribucionesJugadores[jugador][estadistica][1]["a"]
         b = distribucionesJugadores[jugador][estadistica][1]["b"]
-        val = truncweibull_min.rvs(c,a,b,loc, scale, size=1)
+        val = weibull_min.rvs(c,a,b,loc, scale, size=1)
 
     elif distribucionesJugadores[jugador]["nombre"] == "reciprocal":
         loc = distribucionesJugadores[jugador][estadistica][1]["loc"]
@@ -595,13 +601,13 @@ def aplicaDistribucionEquipo(equipo, estadistica):
         a = distribucionesEquipos[equipo][estadistica][1]["a"]
         val = skewcauchy.rvs(a, scale, size=1)
 
-    elif distribucionesEquipos[equipo]["nombre"] == "truncweibull_min":
+    elif distribucionesEquipos[equipo]["nombre"] == "weibull_min":
         loc = distribucionesEquipos[equipo][estadistica][1]["loc"]
         scale = distribucionesEquipos[equipo][estadistica][1]["scale"]
         c = distribucionesEquipos[equipo][estadistica][1]["p"]
         a = distribucionesEquipos[equipo][estadistica][1]["a"]
         b = distribucionesEquipos[equipo][estadistica][1]["b"]
-        val = truncweibull_min.rvs(c, a, b, loc, scale, size=1)
+        val = weibull_min.rvs(c, a, b, loc, scale, size=1)
 
     elif distribucionesEquipos[equipo]["nombre"] == "reciprocal":
         loc = distribucionesEquipos[equipo][estadistica][1]["loc"]
@@ -609,11 +615,18 @@ def aplicaDistribucionEquipo(equipo, estadistica):
         a = distribucionesEquipos[equipo][estadistica][1]["a"]
         b = distribucionesEquipos[equipo][estadistica][1]["b"]
         val = reciprocal.rvs(a, b, loc, scale, size=1)
+    
+    elif distribucionesEquipos[equipo]["nombre"] == "triangular":
+        min = distribucionesEquipos[equipo][estadistica][1]["min"]
+        max = distribucionesEquipos[equipo][estadistica][1]["max"]
+        media = distribucionesEquipos[equipo][estadistica][1]["media"]
+        val = np.random.triangular(min, media, max, 1)
 
     else:
         loc = distribucionesEquipos[equipo][estadistica][1]["loc"]
         scale = distribucionesEquipos[equipo][estadistica][1]["scale"]
         val = norm.rvs(loc, scale, size=1)
+    
     return val
 
 

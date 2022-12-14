@@ -249,20 +249,28 @@ def imprimirCSVEquipo():
     print(jugadores)
 
 
-def ajustarDatos(nombre):
+def ajustarDatos(nombre, min, max):
     archivo = ""
     if nombre in equipos.keys :
         archivo = "Equipos"
     infile = open(archivo, "rb")
     objeto = pickle.load(infile)
     infile.close()
-    distribucion = {}
-    #Datos jugadores
+    distribucion = dict()
     for estadistica in objeto[nombre]["Estadisticas"]:
-        distribucion[estadistica] = []
-        distribucion[estadistica].append(elegirDistribucion(objeto[nombre]["Estadisticas"][estadistica])[0])
-        distribucion[estadistica].append(elegirDistribucion(objeto[nombre]["Estadisticas"][estadistica])[1])
-        distribucion[estadistica].append(objeto[nombre]["Estadisticas"][estadistica])
+        if estadistica != "TiempoPosesion" :
+            distribucion[estadistica] = dict() #Deberia ser un dict, creo
+            n, p = elegirDistribucion(objeto[nombre]["Estadisticas"][estadistica])
+            distribucion[estadistica]['nombre'] = n
+            distribucion[estadistica]['loc'] = p[len(p) - 2]
+            distribucion[estadistica]['scale'] = p[len(p) - 1]
+        else :
+            distribucion[estadistica] = dict()
+            distribucion[estadistica]['nombre'] = "triangular"
+            distribucion[estadistica]['min'] = min
+            distribucion[estadistica]['max'] = max
+            distribucion[estadistica]['media'] = objeto[nombre]["Estadisticas"][estadistica]
+            
     return distribucion
 
 
@@ -270,15 +278,16 @@ def ajustarDatosJugadores(equipoLocal,equipoVisitante):
     infile = open("Jugadores", "rb")
     objetos = pickle.load(infile)
     infile.close()
-    distribucion = {}
-    for objeto in objetos:
+    distribucion = dict()
+    for objeto in objetos.keys():
         if objetos[objeto]["Equipo"] == equipoLocal or objetos[objeto]["Equipo"] == equipoVisitante:
-            distribucion[objeto] = {}
+            distribucion[objeto] = dict()
             for estadistica in objetos[objeto]["Estadisticas"]:
-                distribucion[objeto][estadistica] = []
-                distribucion[objeto][estadistica].append(elegirDistribucion(objetos[objeto]["Estadisticas"][estadistica])[0])
-                distribucion[objeto][estadistica].append(elegirDistribucion(objetos[objeto]["Estadisticas"][estadistica])[1])
-                distribucion[objeto][estadistica].append(objetos[objeto]["Estadisticas"][estadistica])
+                distribucion[objeto][estadistica] = dict()
+                n, p = elegirDistribucion(objetos[objeto]["Estadisticas"][estadistica])
+                distribucion[objeto][estadistica]['nombre'] = n
+                distribucion[objeto][estadistica]['loc'] = p[len(p) - 2]
+                distribucion[objeto][estadistica]['scale'] = p[len(p) - 1]
     return distribucion
 
 
