@@ -1,4 +1,5 @@
 # Librerias
+import math
 import pickle
 from dependencias import TratamientoDatos
 from scipy.stats import *
@@ -33,6 +34,7 @@ def simularPartido(nombreEquipo, nombreEquipo2):
     infile = open(".\Ficheros\DistribucionesJugadores", "rb")
     distribucionesJugadores = pickle.load(infile)
     infile.close()
+    valor = distribucionesJugadores
     print("Paso 3")
     inicializarEquipos(nombreEquipo[1], nombreEquipo2[1])
     inicializarJugadores(nombreEquipo[1], nombreEquipo2[1])
@@ -51,7 +53,7 @@ def simularPartido(nombreEquipo, nombreEquipo2):
             equipoOrden.append(nombreEquipo[1])
             equipoOrden.append(nombreEquipo2[1])
             # determinamos el equipo que saltara el siguiente cuarto
-            saque = (equipo + equipo) % 2
+            saque = (equipo + 1) % 2
             print("Saca el equipo " + equipoOrden[equipo])
 
         elif tiempo == 720:
@@ -80,29 +82,29 @@ def simularPartido(nombreEquipo, nombreEquipo2):
             jugador, jugadorAsiste, roboRealizado, faltaRealizada = jugada(equipo)
             if roboRealizado:
                 maximo = 24
-                equipo = (equipo + equipo) % 2
+                equipo = (equipo + 1) % 2
                 print("Roba " + equipoOrden[equipo])
             else:
                 if faltaRealizada and tiempoUsado > 10:
                     maximo = 14
-                    print("Falta de " + equipoOrden[equipo] + ". Quedan " + str(maximo) + " segundos")
+                    print("Falta de " + equipoOrden[(equipo + 1) % 2] + ". Quedan " + str(maximo) + " segundos")
                 elif faltaRealizada and tiempoUsado < 10:
                     maximo = maximo - tiempoUsado
-                    print("Falta de " + equipoOrden[equipo] + ". Quedan " + str(maximo) + " segundos")
+                    print("Falta de " + equipoOrden[(equipo + 1) % 2] + ". Quedan " + str(maximo) + " segundos")
                 else:
                     # Desarrollo del tiro
                     acierto = tiro(jugador,jugadorAsiste,equipoOrden[equipo])
 
                     # Si se falla el tiro se juega el rebote
                     if not acierto:
-                        reboteCogido = rebote(equipoOrden[equipo], equipoOrden[(equipo + equipo) % 2])
+                        reboteCogido = rebote(equipoOrden[equipo], equipoOrden[(equipo + 1) % 2])
                         if reboteCogido:
                             maximo = 14
                             print("Fallo de " + jugador + ". Rebote para " + equipoOrden[equipo])
                             # juega el mismo equipo el balón
                         else:
                             maximo = 24
-                            equipo = (equipo + equipo) % 2
+                            equipo = (equipo + 1) % 2
                             print("Fallo de " + jugador + ". Rebote para " + equipoOrden[equipo])
                             # empieza una nueva posesión del rival
 
@@ -112,8 +114,8 @@ def simularPartido(nombreEquipo, nombreEquipo2):
             print("Se acaba el cuarto " + str(cuarto))
             # Si fin del último cuarto se sacan los datos del partido
             if cuarto == 4:
-                finPartido()
                 print("Se acaba el partido")
+                finPartido()
             # Sino se empieza un nuevo cuarto
             else:
                 cuarto += 1
@@ -128,13 +130,13 @@ def saltoInicial():
 def jugada(equipo):
     global equipoOrden
     # Simular jugada
-    if robo(equipoOrden[(equipo + equipo)  % 2]):
+    if robo(equipoOrden[(equipo + 1)  % 2]):
         return "","",True,False
     else:
         if falta(equipoOrden[equipo]):
             return "","",False,True
         else:
-            jugador,jugadorAsiste = asistencia(equipo)
+            jugador,jugadorAsiste = asistencia(equipoOrden[equipo])
     return jugador,jugadorAsiste,False,False
 
 
@@ -161,19 +163,19 @@ def falta(equipo):
     valor = aplicaDistribucionEquipo(equipo, "PorcentajeFaltas")[0]
     resultado = random.random()
     if resultado < valor:
-        estadisticasEquipos[equipo]["Estadisticas"]["Faltas"] += 1
+        estadisticasEquipos[equipo]["Faltas"] += 1
         return True
     return False
 
 
 def asistencia(equipo):
-    global estadisticasEquipos; global equipoOrden
+    global estadisticasEquipos
     # Decidir quien hace la asistencia, se genera un valor para cada jugador el mas alto asiste
     maximo = 0
     elegido = ""
     elegidoTiro = ""
-    for jugador in estadisticasEquipos[equipoOrden[equipo]]["Jugadores"]:
-        valor = aplicaDistribucionJugador(jugador,"Asistencia")[0]
+    for jugador in estadisticasEquipos[equipo]["Jugadores"]:
+        valor = aplicaDistribucionJugador(jugador,"Asistencias")[0]
         if valor > maximo:
             maximo = valor
             elegido = jugador
@@ -203,9 +205,10 @@ def tiempoPosesion(equipo, tiempo):
         return -1
 
     # sino devolvemos un dato generado por una función de distribución triangular
-    elif tiempo >= 24:
-        valor = aplicaDistribucionEquipo(equipo, "TiempoPosesion")
-        return round(valor[0])
+    if tiempo > 24:
+        valor = aplicaDistribucionEquipo(equipo, "TiempoPosesion", 24)
+    valor = aplicaDistribucionEquipo(equipo, "TiempoPosesion", tiempo)
+    return round(valor[0])
 
 
 def tiro(jugador, jugadorAsistencia, equipo):
@@ -231,12 +234,12 @@ def tiro(jugador, jugadorAsistencia, equipo):
 
     # Sumar estadistica al jugador
     if jugador != jugadorAsistencia:
-        estadisticasJugadores[equipo][jugadorAsistencia]["EstadisticasPartido"]["Asistencia"] += 1
+        estadisticasJugadores[equipo][jugadorAsistencia]["EstadisticasPartido"]["Asistencias"] += 1
     estadisticasJugadores[equipo][jugador]["EstadisticasPartido"]["TirosAnotados"] += 1
     estadisticasJugadores[equipo][jugador]["EstadisticasPartido"]["Puntos"] += tiro
-    estadisticasEquipos[equipo]["Estadisticas"]["Puntos"] += tiro
+    estadisticasEquipos[equipo]["Puntos"] += tiro
     if tiro == 3:
-        estadisticasJugadores[equipo][jugador]["EstadisticasPartido"]["TriplesAnotado"] += 1
+        estadisticasJugadores[equipo][jugador]["EstadisticasPartido"]["TriplesAnotados"] += 1
 
     return True
 
@@ -244,21 +247,22 @@ def tiro(jugador, jugadorAsistencia, equipo):
 def rebote(equipoPosesion, equipoDefiende):
     global estadisticasEquipos; global estadisticasJugadores
     # Simular rebote
+    elegido = ""
     valor = aplicaDistribucionEquipo(equipoPosesion,"PorcentajeRebote")[0]
     valor2 = aplicaDistribucionEquipo(equipoDefiende,"PorcentajeRebote")[0]
     if valor2 < valor:
         # decidir el jugador que suma la estadistica
-        estadisticasEquipos[equipoPosesion]["Estadisticas"]["Rebotes"] += 1
+        estadisticasEquipos[equipoPosesion]["Rebotes"] += 1
         maximo = 0
         for jugador in estadisticasEquipos[equipoPosesion]["Jugadores"]:
             valor = aplicaDistribucionJugador(jugador, "Rebotes")[0]
             if valor > maximo:
                 maximo = valor
                 elegido = jugador
-        estadisticasJugadores[equipoPosesion][elegido]["Estadisticas"]["Rebotes"] += 1
+        estadisticasJugadores[equipoPosesion][elegido]["EstadisticasPartido"]["Rebotes"] += 1
         return True
 
-    estadisticasEquipos[equipoDefiende]["Estadisticas"]["Rebotes"] += 1
+    estadisticasEquipos[equipoDefiende]["Rebotes"] += 1
     maximo = 0
     for jugador in estadisticasEquipos[equipoDefiende]["Jugadores"]:
         valor = aplicaDistribucionJugador(jugador, "Rebotes")[0]
@@ -266,7 +270,7 @@ def rebote(equipoPosesion, equipoDefiende):
             maximo = valor
             elegido = jugador
     # decidir el jugador que suma la estadistica
-    estadisticasJugadores[equipoDefiende][elegido]["Estadisticas"]["Rebotes"] += 1
+    estadisticasJugadores[equipoDefiende][elegido]["EstadisticasPartido"]["Rebotes"] += 1
     return False
 
 
@@ -276,114 +280,133 @@ def finCuarto():
 
 
 def finPartido():
+    global estadisticasEquipos
     # Recopilar datos finales
-    print("Final partido")
+    print(estadisticasEquipos)
 
 
 def aplicaDistribucionJugador(jugador, estadistica):
     global distribucionesJugadores
-
+    val = [-1]
     if distribucionesJugadores[jugador][estadistica]["nombre"] == "norm":
         loc = distribucionesJugadores[jugador][estadistica]["parametros"]["loc"]
         scale = distribucionesJugadores[jugador][estadistica]["parametros"]["scale"]
-        val = norm.rvs(loc, scale, size=1)
+        if not math.isnan(loc) or not math.isnan(scale):
+            val = norm.rvs(loc, scale, size=1)
 
     elif distribucionesJugadores[jugador][estadistica]["nombre"] == "gumbel_r":
         loc = distribucionesJugadores[jugador][estadistica]["parametros"]["loc"]
         scale = distribucionesJugadores[jugador][estadistica]["parametros"]["scale"]
-        val = gumbel_r.rvs(loc, scale, size=1)
+        if not math.isnan(loc) or not math.isnan(scale):
+            val = gumbel_r.rvs(loc, scale, size=1)
 
     elif distribucionesJugadores[jugador][estadistica]["nombre"] == "gumbel_l":
         loc = distribucionesJugadores[jugador][estadistica]["parametros"]["loc"]
         scale = distribucionesJugadores[jugador][estadistica]["parametros"]["scale"]
-        val = gumbel_l.rvs(loc, scale, size=1)
+        if not math.isnan(loc) or not math.isnan(scale):
+            val = gumbel_l.rvs(loc, scale, size=1)
 
     elif distribucionesJugadores[jugador][estadistica]["nombre"] == "logistic":
         loc = distribucionesJugadores[jugador][estadistica]["parametros"]["loc"]
         scale = distribucionesJugadores[jugador][estadistica]["parametros"]["scale"]
-        val = logistic.rvs(loc, scale, size=1)
+        if not math.isnan(loc) or not math.isnan(scale):
+            val = logistic.rvs(loc, scale, size=1)
 
     elif distribucionesJugadores[jugador][estadistica]["nombre"] == "dgamma":
         loc = distribucionesJugadores[jugador][estadistica]["parametros"]["loc"]
         scale = distribucionesJugadores[jugador][estadistica]["parametros"]["scale"]
         a = distribucionesJugadores[jugador][estadistica]["parametros"]["a"]
-        val = dgamma.rvs(a,loc, scale, size=1)
+        if not math.isnan(loc) or not math.isnan(scale) or not math.isnan(a):
+            val = dgamma.rvs(a,loc, scale, size=1)
 
     elif distribucionesJugadores[jugador][estadistica]["nombre"] == 'hypsecant':
         loc = distribucionesJugadores[jugador][estadistica]["parametros"]["loc"]
         scale = distribucionesJugadores[jugador][estadistica]["parametros"]["scale"]
-        val = hypsecant.rvs(loc, scale, size=1)
+        if not math.isnan(loc) or not math.isnan(scale):
+            val = hypsecant.rvs(loc, scale, size=1)
 
     elif distribucionesJugadores[jugador][estadistica]["nombre"] == "dweybull":
         loc = distribucionesJugadores[jugador][estadistica]["parametros"]["loc"]
         scale = distribucionesJugadores[jugador][estadistica]["parametros"]["scale"]
         c = distribucionesJugadores[jugador][estadistica]["parametros"]["c"]
-        val = weibull_max.rvs(c, loc, scale, size=1)
+        if not math.isnan(loc) or not math.isnan(scale) or not math.isnan(c):
+            val = weibull_max.rvs(c, loc, scale, size=1)
 
     elif distribucionesJugadores[jugador][estadistica]["nombre"] == "genextreme":
         loc = distribucionesJugadores[jugador][estadistica]["parametros"]["loc"]
         scale = distribucionesJugadores[jugador][estadistica]["parametros"]["scale"]
         c = distribucionesJugadores[jugador][estadistica]["parametros"]["c"]
-        val = genextreme.rvs(c,loc, scale, size=1)
+        if not math.isnan(loc) or not math.isnan(scale) or not math.isnan(c):
+            val = genextreme.rvs(c,loc, scale, size=1)
 
     elif distribucionesJugadores[jugador][estadistica]["nombre"] == "skewnorm":
         loc = distribucionesJugadores[jugador][estadistica]["parametros"]["loc"]
         scale = distribucionesJugadores[jugador][estadistica]["parametros"]["scale"]
         a = distribucionesJugadores[jugador][estadistica]["parametros"]["a"]
-        val = skewnorm.rvs(a,loc, scale, size=1)
+        if not math.isnan(loc) or not math.isnan(scale) or not math.isnan(a):
+            val = skewnorm.rvs(a,loc, scale, size=1)
 
     elif distribucionesJugadores[jugador][estadistica]["nombre"] == "genlogistic":
         loc = distribucionesJugadores[jugador][estadistica]["parametros"]["loc"]
         scale = distribucionesJugadores[jugador][estadistica]["parametros"]["scale"]
         c = distribucionesJugadores[jugador][estadistica]["parametros"]["c"]
-        val = genlogistic.rvs(c, loc, scale, size=1)
+        if not math.isnan(loc) or not math.isnan(scale) or not math.isnan(c):
+            val = genlogistic.rvs(c, loc, scale, size=1)
 
     elif distribucionesJugadores[jugador][estadistica]["nombre"] == "pearson3":
         loc = distribucionesJugadores[jugador][estadistica]["parametros"]["loc"]
         scale = distribucionesJugadores[jugador][estadistica]["parametros"]["scale"]
         skew = distribucionesJugadores[jugador][estadistica]["parametros"]["skew"]
-        val = pearson3.rvs(skew,loc, scale, size=1)
+        if not math.isnan(loc) or not math.isnan(scale) or not math.isnan(skew):
+            val = pearson3.rvs(skew,loc, scale, size=1)
 
     elif distribucionesJugadores[jugador][estadistica]["nombre"] == "laplace":
         loc = distribucionesJugadores[jugador][estadistica]["parametros"]["loc"]
         scale = distribucionesJugadores[jugador][estadistica]["parametros"]["scale"]
-        val = laplace.rvs(loc, scale, size=1)
+        if not math.isnan(loc) or not math.isnan(scale):
+            val = laplace.rvs(loc, scale, size=1)
 
     elif distribucionesJugadores[jugador][estadistica]["nombre"] == "powernorm":
         loc = distribucionesJugadores[jugador][estadistica]["parametros"]["loc"]
         scale = distribucionesJugadores[jugador][estadistica]["parametros"]["scale"]
         c = distribucionesJugadores[jugador][estadistica]["parametros"]["c"]
-        val = powernorm.rvs(c, loc, scale, size=1)
+        if not math.isnan(loc) or not math.isnan(scale) or not math.isnan(c):
+            val = powernorm.rvs(c, loc, scale, size=1)
 
     elif distribucionesJugadores[jugador][estadistica]["nombre"] == "exponnorm":
         loc = distribucionesJugadores[jugador][estadistica]["parametros"]["loc"]
         scale = distribucionesJugadores[jugador][estadistica]["parametros"]["scale"]
-        val = exponnorm.rvs(loc, scale, size=1)
+        if not math.isnan(loc) or not math.isnan(scale):
+            val = exponnorm.rvs(loc, scale, size=1)
 
     elif distribucionesJugadores[jugador][estadistica]["nombre"] == "norminvgauss":
         loc = distribucionesJugadores[jugador][estadistica]["parametros"]["loc"]
         scale = distribucionesJugadores[jugador][estadistica]["parametros"]["scale"]
         a = distribucionesJugadores[jugador][estadistica]["parametros"]["a"]
         b = distribucionesJugadores[jugador][estadistica]["parametros"]["b"]
-        val = norminvgauss.rvs(a,b,loc, scale, size=1)
+        if not math.isnan(loc) or not math.isnan(scale) or not math.isnan(a) or not math.isnan(b):
+            val = norminvgauss.rvs(a,b,loc, scale, size=1)
 
     elif distribucionesJugadores[jugador][estadistica]["nombre"] == "johnsonsu":
         loc = distribucionesJugadores[jugador][estadistica]["parametros"]["loc"]
         scale = distribucionesJugadores[jugador][estadistica]["parametros"]["scale"]
         a = distribucionesJugadores[jugador][estadistica]["parametros"]["a"]
         b = distribucionesJugadores[jugador][estadistica]["parametros"]["b"]
-        val = johnsonsu.rvs(a,b,loc, scale, size=1)
+        if not math.isnan(loc) or not math.isnan(scale) or not math.isnan(a) or not math.isnan(b):
+            val = johnsonsu.rvs(a,b,loc, scale, size=1)
 
     elif distribucionesJugadores[jugador][estadistica]["nombre"] == "cauchy":
         loc = distribucionesJugadores[jugador][estadistica]["parametros"]["loc"]
         scale = distribucionesJugadores[jugador][estadistica]["parametros"]["scale"]
-        val = cauchy.rvs(loc, scale, size=1)
+        if not math.isnan(loc) or not math.isnan(scale):
+            val = cauchy.rvs(loc, scale, size=1)
 
     elif distribucionesJugadores[jugador][estadistica]["nombre"] == "tukeylambda":
         loc = distribucionesJugadores[jugador][estadistica]["parametros"]["loc"]
         scale = distribucionesJugadores[jugador][estadistica]["parametros"]["scale"]
         lam = distribucionesJugadores[jugador][estadistica]["parametros"]["lam"]
-        val = tukeylambda.rvs(lam,loc, scale, size=1)
+        if not math.isnan(loc) or not math.isnan(scale) or not math.isnan(lam):
+            val = tukeylambda.rvs(lam,loc, scale, size=1)
 
     elif distribucionesJugadores[jugador][estadistica]["nombre"] == "genhyperbolic":
         loc = distribucionesJugadores[jugador][estadistica]["parametros"]["loc"]
@@ -391,70 +414,81 @@ def aplicaDistribucionJugador(jugador, estadistica):
         p = distribucionesJugadores[jugador][estadistica]["parametros"]["p"]
         a = distribucionesJugadores[jugador][estadistica]["parametros"]["a"]
         b = distribucionesJugadores[jugador][estadistica]["parametros"]["b"]
-        val = genhyperbolic.rvs(p,a,b,loc, scale, size=1)
+        if not math.isnan(loc) or not math.isnan(scale) or not math.isnan(p) or not math.isnan(a) or not math.isnan(b):
+            val = genhyperbolic.rvs(p,a,b,loc, scale, size=1)
 
     elif distribucionesJugadores[jugador][estadistica]["nombre"] == "kappa4":
         loc = distribucionesJugadores[jugador][estadistica]["parametros"]["loc"]
         scale = distribucionesJugadores[jugador][estadistica]["parametros"]["scale"]
         h = distribucionesJugadores[jugador][estadistica]["parametros"]["h"]
         k = distribucionesJugadores[jugador][estadistica]["parametros"]["k"]
-        val = kappa4.rvs(h,k,loc, scale, size=1)
+        if not math.isnan(loc) or not math.isnan(scale) or not math.isnan(h) or not math.isnan(k):
+            val = kappa4.rvs(h,k,loc, scale, size=1)
 
     elif distribucionesJugadores[jugador][estadistica]["nombre"] == "laplace_asymmetric":
         loc = distribucionesJugadores[jugador][estadistica]["parametros"]["loc"]
         scale = distribucionesJugadores[jugador][estadistica]["parametros"]["scale"]
         kappa = distribucionesJugadores[jugador][estadistica]["parametros"]["kappa"]
-        val = laplace_asymmetric.rvs(kappa,loc, scale, size=1)
+        if not math.isnan(loc) or not math.isnan(scale) or not math.isnan(kappa):
+            val = laplace_asymmetric.rvs(kappa,loc, scale, size=1)
 
     elif distribucionesJugadores[jugador][estadistica]["nombre"] == "moyal":
         loc = distribucionesJugadores[jugador][estadistica]["parametros"]["loc"]
         scale = distribucionesJugadores[jugador][estadistica]["parametros"]["scale"]
-        val = moyal.rvs(loc, scale, size=1)
+        if not math.isnan(loc) or not math.isnan(scale):
+            val = moyal.rvs(loc, scale, size=1)
 
     elif distribucionesJugadores[jugador][estadistica]["nombre"] == "t":
         loc = distribucionesJugadores[jugador][estadistica]["parametros"]["loc"]
         scale = distribucionesJugadores[jugador][estadistica]["parametros"]["scale"]
         df = distribucionesJugadores[jugador][estadistica]["parametros"]["df"]
-        val = t.rvs(df,loc, scale, size=1)
+        if not math.isnan(loc) or not math.isnan(scale) or not math.isnan(df):
+            val = t.rvs(df,loc, scale, size=1)
 
     elif distribucionesJugadores[jugador][estadistica]["nombre"] == "gennorm":
         loc = distribucionesJugadores[jugador][estadistica]["parametros"]["loc"]
         scale = distribucionesJugadores[jugador][estadistica]["parametros"]["scale"]
         beta = distribucionesJugadores[jugador][estadistica]["parametros"]["beta"]
-        val = gennorm.rvs(beta,loc, scale, size=1)
+        if not math.isnan(loc) or not math.isnan(scale) or not math.isnan(beta):
+            val = gennorm.rvs(beta,loc, scale, size=1)
 
     elif distribucionesJugadores[jugador][estadistica]["nombre"] == "loggamma":
         loc = distribucionesJugadores[jugador][estadistica]["parametros"]["loc"]
         scale = distribucionesJugadores[jugador][estadistica]["parametros"]["scale"]
         c = distribucionesJugadores[jugador][estadistica]["parametros"]["c"]
-        val = loggamma.rvs(c, loc, scale, size=1)
+        if not math.isnan(loc) or not math.isnan(scale) or not math.isnan(c):
+            val = loggamma.rvs(c, loc, scale, size=1)
 
     elif distribucionesJugadores[jugador][estadistica]["nombre"] == "nct":
         loc = distribucionesJugadores[jugador][estadistica]["parametros"]["loc"]
         scale = distribucionesJugadores[jugador][estadistica]["parametros"]["scale"]
         df = distribucionesJugadores[jugador][estadistica]["parametros"]["df"]
         nc = distribucionesJugadores[jugador][estadistica]["parametros"]["nc"]
-        val = nct.rvs(df,nc,loc, scale, size=1)
+        if not math.isnan(loc) or not math.isnan(scale) or not math.isnan(df) or not math.isnan(nc):
+            val = nct.rvs(df,nc,loc, scale, size=1)
 
     elif distribucionesJugadores[jugador][estadistica]["nombre"] == "crystalball":
         loc = distribucionesJugadores[jugador][estadistica]["parametros"]["loc"]
         scale = distribucionesJugadores[jugador][estadistica]["parametros"]["scale"]
         beta = distribucionesJugadores[jugador][estadistica]["parametros"]["beta"]
         m = distribucionesJugadores[jugador][estadistica]["parametros"]["m"]
-        val = crystalball.rvs(beta,m,loc, scale, size=1)
+        if not math.isnan(loc) or not math.isnan(scale) or not math.isnan(beta) or not math.isnan(m):
+            val = crystalball.rvs(beta,m,loc, scale, size=1)
 
     elif distribucionesJugadores[jugador][estadistica]["nombre"] == "truncnorm":
         loc = distribucionesJugadores[jugador][estadistica]["parametros"]["loc"]
         scale = distribucionesJugadores[jugador][estadistica]["parametros"]["scale"]
         a = distribucionesJugadores[jugador][estadistica]["parametros"]["a"]
         b = distribucionesJugadores[jugador][estadistica]["parametros"]["b"]
-        val = truncnorm.rvs(a,b,loc, scale, size=1)
+        if not math.isnan(loc) or not math.isnan(scale) or not math.isnan(a) or not math.isnan(b):
+            val = truncnorm.rvs(a,b,loc, scale, size=1)
 
     elif distribucionesJugadores[jugador][estadistica]["nombre"] == "skewcauchy":
         loc = distribucionesJugadores[jugador][estadistica]["parametros"]["loc"]
         scale = distribucionesJugadores[jugador][estadistica]["parametros"]["scale"]
         a = distribucionesJugadores[jugador][estadistica]["parametros"]["a"]
-        val = skewcauchy.rvs(a, scale, size=1)
+        if not math.isnan(loc) or not math.isnan(scale) or not math.isnan(a):
+            val = skewcauchy.rvs(a, scale, size=1)
 
     elif distribucionesJugadores[jugador][estadistica]["nombre"] == "weibull_min":
         loc = distribucionesJugadores[jugador][estadistica]["parametros"]["loc"]
@@ -462,24 +496,27 @@ def aplicaDistribucionJugador(jugador, estadistica):
         c = distribucionesJugadores[jugador][estadistica]["parametros"]["p"]
         a = distribucionesJugadores[jugador][estadistica]["parametros"]["a"]
         b = distribucionesJugadores[jugador][estadistica]["parametros"]["b"]
-        val = weibull_min.rvs(c,a,b,loc, scale, size=1)
+        if not math.isnan(loc) or not math.isnan(scale) or not math.isnan(c) or not math.isnan(a) or not math.isnan(b):
+            val = weibull_min.rvs(c,a,b,loc, scale, size=1)
 
     elif distribucionesJugadores[jugador][estadistica]["nombre"] == "reciprocal":
         loc = distribucionesJugadores[jugador][estadistica]["parametros"]["loc"]
         scale = distribucionesJugadores[jugador][estadistica]["parametros"]["scale"]
         a = distribucionesJugadores[jugador][estadistica]["parametros"]["a"]
         b = distribucionesJugadores[jugador][estadistica]["parametros"]["b"]
-        val = reciprocal.rvs(a,b,loc, scale, size=1)
+        if not math.isnan(loc) or not math.isnan(scale) or not math.isnan(b) or not math.isnan(a):
+            val = reciprocal.rvs(a,b,loc, scale, size=1)
 
     else:
         loc = distribucionesJugadores[jugador][estadistica]["parametros"]["loc"]
         scale = distribucionesJugadores[jugador][estadistica]["parametros"]["scale"]
-        val = norm.rvs(loc, scale, size=1)
+        if not math.isnan(loc) or not math.isnan(scale):
+            val = norm.rvs(loc, scale, size=1)
 
     return val
 
 
-def aplicaDistribucionEquipo(equipo, estadistica):
+def aplicaDistribucionEquipo(equipo, estadistica, tiempo=0 ):
     global distribucionesEquipos
 
     if distribucionesEquipos[equipo][estadistica]["nombre"] == "norm":
@@ -672,7 +709,7 @@ def aplicaDistribucionEquipo(equipo, estadistica):
 
     elif distribucionesEquipos[equipo][estadistica]["nombre"] == "triangular":
         min = distribucionesEquipos[equipo][estadistica]["min"]
-        max = distribucionesEquipos[equipo][estadistica]["max"]
+        max = tiempo
         media = distribucionesEquipos[equipo][estadistica]["media"]
         val = np.random.triangular(min, media, max, 1)
 
@@ -712,11 +749,11 @@ def inicializarJugadores(nombreLocal, nombreVisitante):
             estadisticasJugadores[nombreLocal][jugador] = \
                 {"Estadisticas" : jugadores[jugador]["Estadisticas"],
                  "EstadisticasPartido" :
-                     { "Puntos": 0, "Asistencias": 0, "Rebotes": 0, "Robos": 0, "Tiros Anotados": 0, "Tiros": 0, "Triples Anotados": 0, "Triples": 0 }
+                     { "Puntos": 0, "Asistencias": 0, "Rebotes": 0, "Robos": 0, "TirosAnotados": 0, "Tiros": 0, "TriplesAnotados": 0, "Triples": 0 }
                 }
         elif jugadores[jugador]["Equipo"] == nombreVisitante:
             estadisticasJugadores[nombreVisitante][jugador] = \
                 {"Estadisticas" : jugadores[jugador]["Estadisticas"],
                  "EstadisticasPartido" :
-                     { "Puntos": 0, "Asistencias": 0, "Rebotes": 0, "Robos": 0, "Tiros Anotados": 0, "Tiros": 0, "Triples Anotados": 0, "Triples": 0 }
+                     { "Puntos": 0, "Asistencias": 0, "Rebotes": 0, "Robos": 0, "TirosAnotados": 0, "Tiros": 0, "TriplesAnotados": 0, "Triples": 0 }
                 }

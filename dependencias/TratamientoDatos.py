@@ -37,6 +37,8 @@ equipos = {
     "Washington Wizzards": "WAS"
 }
 
+posesiones = 0
+
 
 def cargaDatosGeneral():
     leerPartidos()
@@ -68,6 +70,14 @@ def leerCSVJugadores():
 
 def leerCSVEquipos():
     global equipos
+    tiemposPosesion = {}
+    # Adición tiempo de posesion
+    with open('.\Ficheros\Datos_posesiones.csv', newline='') as File:
+        next(File)
+        next(File)
+        reader = csv.reader(File)
+        for row in reader:
+            tiemposPosesion[row[1]] = float(row[2])
     datosEquipo = {}
     with open('.\Ficheros\equipos.csv', newline='') as File:
         next(File)
@@ -77,7 +87,7 @@ def leerCSVEquipos():
             datos["Abreviatura"] = row[4]
             datos["NombreCompleto"] = list(equipos.keys())[list(equipos.values()).index(row[4])]
             datos["Estadio"] = row[8]
-            datos["Estadisticas"] = {"Tiros": [], "Robos": [],"PorcentajeRobos": [], "Faltas": [],"PorcentajeFaltas": [], "Rebotes": [], "PorcentajeRebote": [],"Asistencias": [], "TiempoPosesion" : 0}
+            datos["Estadisticas"] = {"Tiros": [], "Robos": [],"PorcentajeRobos": [], "Faltas": [],"PorcentajeFaltas": [], "Rebotes": [], "PorcentajeRebote": [],"Asistencias": [], "TiempoPosesion" : tiemposPosesion[row[4]]}
             datosEquipo[row[1]] = datos
     fichero_datos = open(".\Ficheros\Equipos", "wb")
     pickle.dump(datosEquipo, fichero_datos)
@@ -89,7 +99,6 @@ def leerPartidos():
     infile = open(".\Ficheros\Equipos", "rb")
     equipo = pickle.load(infile)
     infile.close()
-    iterador = 0
     with open('.\Ficheros\games.csv', newline='') as File:
         next(File)
         reader = csv.reader(File)
@@ -100,9 +109,9 @@ def leerPartidos():
             equipo[row[4]]["Estadisticas"]["PorcentajeRebote"].append(int(float(row[19])) / (int(float(row[12])) + int(float(row[19]))))
             equipo[row[3]]["Estadisticas"]["Asistencias"].append(int(float(row[11])))
             equipo[row[4]]["Estadisticas"]["Asistencias"].append(int(float(row[18])))
-        fichero_datos = open(".\Ficheros\Equipos", "wb")
-        pickle.dump(equipo, fichero_datos)
-        fichero_datos.close()
+    fichero_datos = open(".\Ficheros\Equipos", "wb")
+    pickle.dump(equipo, fichero_datos)
+    fichero_datos.close()
     leerEstadisticasIndividualesEquipo()
 
 
@@ -153,14 +162,16 @@ def leerPartidosJugadores():
                     except :
                         pass
                 if row[12] != "":
-                    jugadores[row[5]]["Estadisticas"]["PorcentajeAciertos"].append(float(row[12]))
+                    valor = row[12].replace(",",".")
+                    jugadores[row[5]]["Estadisticas"]["PorcentajeAciertos"].append(float(valor))
                 if row[14] != "":
                     try :
                         jugadores[row[5]]["Estadisticas"]["PorcentajeTriples"].append(int(float(row[14])) / int(float(row[11])))
                     except :
                         jugadores[row[5]]["Estadisticas"]["PorcentajeTriples"].append(0)
                 if row[15] != "":
-                    jugadores[row[5]]["Estadisticas"]["PorcentajeAciertoTriples"].append(float(row[15]))
+                    valor = row[12].replace(",", ".")
+                    jugadores[row[5]]["Estadisticas"]["PorcentajeAciertoTriples"].append(float(valor))
         fichero_datos = open(".\Ficheros\Jugadores", "wb")
         pickle.dump(jugadores, fichero_datos)
         fichero_datos.close()
@@ -180,13 +191,6 @@ def cambioClaves():
         datos["Estadio"] = equiposDatos[equipo]["Estadio"]
         datos["Estadisticas"] = equiposDatos[equipo]["Estadisticas"]
         nuevoEquipos[equiposDatos[equipo]["NombreCompleto"]] = datos
-    # Adición tiempo de posesion
-    with open('.\Ficheros\Datos_posesiones.csv', newline='') as File:
-        next(File)
-        next(File)
-        reader = csv.reader(File)
-        for row in reader:
-            nuevoEquipos[list(equipos.keys())[list(equipos.values()).index(row[1])]]["Estadisticas"]["TiempoPosesion"] = float(row[2])
     fichero_datos = open(".\Ficheros\Equipos", "wb")
     pickle.dump(nuevoEquipos, fichero_datos)
     fichero_datos.close()
