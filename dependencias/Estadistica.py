@@ -4,9 +4,8 @@ import numpy as np
 
 
 # Gráficos
-from matplotlib import style
 import matplotlib.pyplot as plt
-
+from matplotlib import style
 
 # Ajuste de distribuciones
 from scipy import stats
@@ -169,7 +168,6 @@ def comparar_distribuciones(x, familia='realall', ordenar='aic', verbose=True):
     bic_ = []
     n_parametros_ = []
     parametros_ = []
-    resultados = pd.DataFrame()
 
     for i, distribucion in enumerate(distribuciones):
 
@@ -272,6 +270,7 @@ def plot_distribucion(x, nombre_distribucion, ax=None):
     print(f"AIC:            {aic}")
     print(f"BIC:            {bic}")
 
+    plt.show()
     return ax
 
 def plot_multiple_distribuciones(x, nombre_distribuciones, ax=None):
@@ -326,6 +325,6 @@ def plot_multiple_distribuciones(x, nombre_distribuciones, ax=None):
         y_hat = distribucion.pdf(x_hat, *parametros)
         ax.plot(x_hat, y_hat, linewidth=2, label=distribucion.name)
 
-    ax.legend();
+    ax.legend()
 
     return ax

@@ -58,8 +58,8 @@ def leerCSVJugadores():
             datos = {}
             datos["ID"] = row[2]
             datos["Equipo"] = equipo[row[1]]["NombreCompleto"]
-            datos["Estadisticas"] = {"Minutos": [], "Puntos": [], "Asistencias": [], "Rebotes": [], "Robos": [], "Tiros": [], "ProbabilidadTiro": [],
-                                     "PorcentajeAciertos": [], "Triples": [],"PorcentajeTriples": [] , "PorcentajeAciertoTriples": []}
+            datos["Estadisticas"] = {"Asistencias": [], "Rebotes": [], "Robos": [],"ProbabilidadTiro": [],
+                                     "PorcentajeAciertos": [],"PorcentajeTriples": [] , "PorcentajeAciertoTriples": []}
             datosJugador[row[0]] = datos
         fichero_datos = open(".\Ficheros\Jugadores", "wb")
         pickle.dump(datosJugador, fichero_datos)
@@ -89,6 +89,7 @@ def leerPartidos():
     infile = open(".\Ficheros\Equipos", "rb")
     equipo = pickle.load(infile)
     infile.close()
+    iterador = 0
     with open('.\Ficheros\games.csv', newline='') as File:
         next(File)
         reader = csv.reader(File)
@@ -137,12 +138,6 @@ def leerPartidosJugadores():
                 if eq != equipoPartido and equipoPartido != "":
                     iterador[equipoPartido]["Numero"] += 1
                 equipoPartido = eq
-                if row[9] != "":
-                    m = int(row[9].split(':')[0])
-                    s = int(row[9].split(':')[1])
-                    jugadores[row[5]]["Estadisticas"]["Minutos"].append(m*60 + s)
-                if row[27] != "":
-                    jugadores[row[5]]["Estadisticas"]["Puntos"].append(int(float(row[27])))
                 if row[21] != "":
                     jugadores[row[5]]["Estadisticas"]["Rebotes"].append(int(float(row[21])) / equiposDatos[iterador[jugadores[row[5]]["Equipo"]]["ID"]]["Estadisticas"]["Rebotes"][iterador[jugadores[row[5]]["Equipo"]]["Numero"]])
                 if row[22] != "":
@@ -153,7 +148,6 @@ def leerPartidosJugadores():
                     except :
                         jugadores[row[5]]["Estadisticas"]["Robos"].append(0)
                 if row[11] != "":
-                    jugadores[row[5]]["Estadisticas"]["Tiros"].append(int(float(row[11])))
                     try :
                         jugadores[row[5]]["Estadisticas"]["ProbabilidadTiro"].append(int(float(row[11])) / equiposDatos[iterador[jugadores[row[5]]["Equipo"]]["ID"]]["Estadisticas"]["Tiros"][iterador[jugadores[row[5]]["Equipo"]]["Numero"]])
                     except :
@@ -161,7 +155,6 @@ def leerPartidosJugadores():
                 if row[12] != "":
                     jugadores[row[5]]["Estadisticas"]["PorcentajeAciertos"].append(float(row[12]))
                 if row[14] != "":
-                    jugadores[row[5]]["Estadisticas"]["Triples"].append(int(float(row[14])))
                     try :
                         jugadores[row[5]]["Estadisticas"]["PorcentajeTriples"].append(int(float(row[14])) / int(float(row[11])))
                     except :
@@ -193,7 +186,7 @@ def cambioClaves():
         next(File)
         reader = csv.reader(File)
         for row in reader:
-            nuevoEquipos[list(equipos.keys())[list(equipos.values()).index(row[1])]]["Estadisticas"]["TiempoPosesion"] = row[2]
+            nuevoEquipos[list(equipos.keys())[list(equipos.values()).index(row[1])]]["Estadisticas"]["TiempoPosesion"] = float(row[2])
     fichero_datos = open(".\Ficheros\Equipos", "wb")
     pickle.dump(nuevoEquipos, fichero_datos)
     fichero_datos.close()
@@ -308,7 +301,7 @@ def ajustarDatosJugadores(equipoLocal, equipoVisitante):
 
 
 def elegirDistribucion(datos):
-    print(np.array(list(datos)))
+    # print(np.array(list(datos)))
     resultados = Estadistica.comparar_distribuciones(
         x=np.array(list(datos)),  # Se pasa la lista como un array NumPy
         familia='realall',

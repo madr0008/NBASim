@@ -21,14 +21,19 @@ def simularPartido(nombreEquipo, nombreEquipo2):
     print("Empieza")
     TratamientoDatos.cargaDatosGeneral()
     print("Paso 1")
-    distribucionesEquipos[nombreEquipo[1]] = TratamientoDatos.ajustarDatos(nombreEquipo[1], tiempoParaTiro, 24)
-    print("Paso 2")
+    #distribucionesEquipos[nombreEquipo[1]] = TratamientoDatos.ajustarDatos(nombreEquipo[1], tiempoParaTiro, 24)
+    #print("Paso 2")
+    infile = open(".\Ficheros\DistribucionesEquipos", "rb")
+    distribucionesEquipos = pickle.load(infile)
+    infile.close()
     print(nombreEquipo[1])
     print(nombreEquipo2[1])
-    distribucionesEquipos[nombreEquipo2[1]] = TratamientoDatos.ajustarDatos(nombreEquipo2[1], tiempoParaTiro, 24)
+    #distribucionesEquipos[nombreEquipo2[1]] = TratamientoDatos.ajustarDatos(nombreEquipo2[1], tiempoParaTiro, 24)
+    #distribucionesJugadores = TratamientoDatos.ajustarDatosJugadores(nombreEquipo[1], nombreEquipo2[1])
+    infile = open(".\Ficheros\DistribucionesJugadores", "rb")
+    distribucionesJugadores = pickle.load(infile)
+    infile.close()
     print("Paso 3")
-    distribucionesJugadores = TratamientoDatos.ajustarDatosJugadores(nombreEquipo[1], nombreEquipo2[1])
-    print("Paso 4")
     inicializarEquipos(nombreEquipo[1], nombreEquipo2[1])
     inicializarJugadores(nombreEquipo[1], nombreEquipo2[1])
     tiempo = 720
@@ -37,7 +42,7 @@ def simularPartido(nombreEquipo, nombreEquipo2):
     maximo = 24
     while tiempo > 0 and cuarto != 4:
 
-        print("\n\n" + str(tiempo) + "segundos del cuarto " + str(cuarto))
+        print("\n\n" + str(tiempo) + " segundos del cuarto " + str(cuarto))
 
         if cuarto == 1 and tiempo == 720:
 
@@ -47,7 +52,7 @@ def simularPartido(nombreEquipo, nombreEquipo2):
             equipoOrden.append(nombreEquipo2[1])
             # determinamos el equipo que saltara el siguiente cuarto
             saque = (equipo + equipo) % 2
-            print("Saca el equipo " + equipo)
+            print("Saca el equipo " + equipoOrden[equipo])
 
         elif tiempo == 720:
 
@@ -69,7 +74,7 @@ def simularPartido(nombreEquipo, nombreEquipo2):
 
         if tiempo >= 0:
 
-            print("La jugada dura " + str(tiempo) + " segundos")
+            print("La jugada dura " + str(tiempoUsado) + " segundos")
 
             # Desarrollo de la jugada
             jugador, jugadorAsiste, roboRealizado, faltaRealizada = jugada(equipo)
@@ -136,11 +141,12 @@ def jugada(equipo):
 def robo(equipo):
     global estadisticasJugadores; global estadisticasEquipos
 
-    valor = aplicaDistribucionEquipo(equipo, "Robo")
+    valor = aplicaDistribucionEquipo(equipo, "PorcentajeRobos")[0]
     resultado = random.random()
+    maximo = 0
     if resultado < valor:
         for jugador in estadisticasEquipos[equipo]["Jugadores"]:
-            valor = aplicaDistribucionJugador(jugador, "Robos")
+            valor = aplicaDistribucionJugador(jugador, "Robos")[0]
             if valor > maximo:
                 maximo = valor
                 elegido = jugador
@@ -152,7 +158,7 @@ def robo(equipo):
 def falta(equipo):
     global estadisticasEquipos
 
-    valor = aplicaDistribucionEquipo(equipo, "Falta")
+    valor = aplicaDistribucionEquipo(equipo, "PorcentajeFaltas")[0]
     resultado = random.random()
     if resultado < valor:
         estadisticasEquipos[equipo]["Estadisticas"]["Faltas"] += 1
@@ -161,13 +167,13 @@ def falta(equipo):
 
 
 def asistencia(equipo):
-    global estadisticasEquipos
+    global estadisticasEquipos; global equipoOrden
     # Decidir quien hace la asistencia, se genera un valor para cada jugador el mas alto asiste
     maximo = 0
     elegido = ""
     elegidoTiro = ""
-    for jugador in estadisticasEquipos[equipo]["Jugadores"]:
-        valor = aplicaDistribucionJugador(jugador,"Asistencia")
+    for jugador in estadisticasEquipos[equipoOrden[equipo]]["Jugadores"]:
+        valor = aplicaDistribucionJugador(jugador,"Asistencia")[0]
         if valor > maximo:
             maximo = valor
             elegido = jugador
@@ -179,7 +185,7 @@ def asistencia(equipo):
         maximo = 0
         for jugador in estadisticasEquipos[equipo]["Jugadores"]:
             if jugador != elegido:
-                valor = aplicaDistribucionJugador(jugador,"ProbabilidadTiro")
+                valor = aplicaDistribucionJugador(jugador,"ProbabilidadTiro")[0]
                 if valor > maximo:
                     maximo = valor
                     elegidoTiro = jugador
@@ -198,25 +204,26 @@ def tiempoPosesion(equipo, tiempo):
 
     # sino devolvemos un dato generado por una función de distribución triangular
     elif tiempo >= 24:
-        return round(aplicaDistribucionEquipo(equipo, "TiempoPosesion"))
+        valor = aplicaDistribucionEquipo(equipo, "TiempoPosesion")
+        return round(valor[0])
 
 
 def tiro(jugador, jugadorAsistencia, equipo):
     global estadisticasJugadores; global estadisticasEquipos
 
     # Decidir si el tiro es de dos o de tres
-    valor = aplicaDistribucionJugador(jugador,"PorcentajeTriples")
+    valor = aplicaDistribucionJugador(jugador,"PorcentajeTriples")[0]
     resultado = random.random()
     if valor > resultado:
         tiro = 3
         estadisticasJugadores[equipo][jugador]["EstadisticasPartido"]["Tiros"] += 1
         estadisticasJugadores[equipo][jugador]["EstadisticasPartido"]["Triples"] += 1
-        valor = aplicaDistribucionJugador(jugador, "PorcentajeAciertoTriples")
+        valor = aplicaDistribucionJugador(jugador, "PorcentajeAciertoTriples")[0]
     else:
         tiro = 2
         estadisticasJugadores[equipo][jugador]["EstadisticasPartido"]["Tiros"] += 1
         # Simular tiro
-        valor = aplicaDistribucionJugador(jugador,"PorcentajeAciertos")
+        valor = aplicaDistribucionJugador(jugador,"PorcentajeAciertos")[0]
     resultado = random.random()
 
     if resultado > valor:
@@ -237,13 +244,14 @@ def tiro(jugador, jugadorAsistencia, equipo):
 def rebote(equipoPosesion, equipoDefiende):
     global estadisticasEquipos; global estadisticasJugadores
     # Simular rebote
-    valor = aplicaDistribucionEquipo(equipoPosesion,"Rebote")
-    valor2 = aplicaDistribucionEquipo(equipoDefiende,"Rebote")
+    valor = aplicaDistribucionEquipo(equipoPosesion,"PorcentajeRebote")[0]
+    valor2 = aplicaDistribucionEquipo(equipoDefiende,"PorcentajeRebote")[0]
     if valor2 < valor:
         # decidir el jugador que suma la estadistica
         estadisticasEquipos[equipoPosesion]["Estadisticas"]["Rebotes"] += 1
+        maximo = 0
         for jugador in estadisticasEquipos[equipoPosesion]["Jugadores"]:
-            valor = aplicaDistribucionJugador(jugador, "Robos")
+            valor = aplicaDistribucionJugador(jugador, "Rebotes")[0]
             if valor > maximo:
                 maximo = valor
                 elegido = jugador
@@ -251,8 +259,9 @@ def rebote(equipoPosesion, equipoDefiende):
         return True
 
     estadisticasEquipos[equipoDefiende]["Estadisticas"]["Rebotes"] += 1
+    maximo = 0
     for jugador in estadisticasEquipos[equipoDefiende]["Jugadores"]:
-        valor = aplicaDistribucionJugador(jugador, "Robos")
+        valor = aplicaDistribucionJugador(jugador, "Rebotes")[0]
         if valor > maximo:
             maximo = valor
             elegido = jugador
@@ -665,9 +674,6 @@ def aplicaDistribucionEquipo(equipo, estadistica):
         min = distribucionesEquipos[equipo][estadistica]["min"]
         max = distribucionesEquipos[equipo][estadistica]["max"]
         media = distribucionesEquipos[equipo][estadistica]["media"]
-        print(min)
-        print(max)
-        print(media)
         val = np.random.triangular(min, media, max, 1)
 
     else:
@@ -699,10 +705,18 @@ def inicializarJugadores(nombreLocal, nombreVisitante):
     infile = open(".\Ficheros\Jugadores", "rb")
     jugadores = pickle.load(infile)
     infile.close()
+    estadisticasJugadores[nombreLocal] = {}
+    estadisticasJugadores[nombreVisitante] = {}
     for jugador in jugadores:
         if jugadores[jugador]["Equipo"] == nombreLocal:
             estadisticasJugadores[nombreLocal][jugador] = \
-                {"Estadisticas" : { jugadores[jugador]["Estadisticas"] },
+                {"Estadisticas" : jugadores[jugador]["Estadisticas"],
+                 "EstadisticasPartido" :
+                     { "Puntos": 0, "Asistencias": 0, "Rebotes": 0, "Robos": 0, "Tiros Anotados": 0, "Tiros": 0, "Triples Anotados": 0, "Triples": 0 }
+                }
+        elif jugadores[jugador]["Equipo"] == nombreVisitante:
+            estadisticasJugadores[nombreVisitante][jugador] = \
+                {"Estadisticas" : jugadores[jugador]["Estadisticas"],
                  "EstadisticasPartido" :
                      { "Puntos": 0, "Asistencias": 0, "Rebotes": 0, "Robos": 0, "Tiros Anotados": 0, "Tiros": 0, "Triples Anotados": 0, "Triples": 0 }
                 }
