@@ -22,19 +22,24 @@ def simularPartido(nombreEquipo, nombreEquipo2):
     print("Empieza")
     TratamientoDatos.cargaDatosGeneral()
     print("Paso 1")
-    #distribucionesEquipos[nombreEquipo[1]] = TratamientoDatos.ajustarDatos(nombreEquipo[1], tiempoParaTiro, 24)
-    #print("Paso 2")
+    # distribucionesEquipos[nombreEquipo[1]] = TratamientoDatos.ajustarDatos(nombreEquipo[1], tiempoParaTiro, 24)
+    # distribucionesEquipos[nombreEquipo2[1]] = TratamientoDatos.ajustarDatos(nombreEquipo2[1], tiempoParaTiro, 24)
+    # fichero_datos = open(".\Ficheros\DistribucionesEquipos", "wb")
+    # pickle.dump(distribucionesEquipos, fichero_datos)
+    # fichero_datos.close()
     infile = open(".\Ficheros\DistribucionesEquipos", "rb")
     distribucionesEquipos = pickle.load(infile)
     infile.close()
-    print(nombreEquipo[1])
-    print(nombreEquipo2[1])
-    #distribucionesEquipos[nombreEquipo2[1]] = TratamientoDatos.ajustarDatos(nombreEquipo2[1], tiempoParaTiro, 24)
-    #distribucionesJugadores = TratamientoDatos.ajustarDatosJugadores(nombreEquipo[1], nombreEquipo2[1])
+
+    print("Paso 2")
+    # distribucionesJugadores = TratamientoDatos.ajustarDatosJugadores(nombreEquipo[1], nombreEquipo2[1])
+    # fichero_datos = open(".\Ficheros\DistribucionesJugadores", "wb")
+    # pickle.dump(distribucionesJugadores, fichero_datos)
+    # fichero_datos.close()
     infile = open(".\Ficheros\DistribucionesJugadores", "rb")
     distribucionesJugadores = pickle.load(infile)
     infile.close()
-    valor = distribucionesJugadores
+
     print("Paso 3")
     inicializarEquipos(nombreEquipo[1], nombreEquipo2[1])
     inicializarJugadores(nombreEquipo[1], nombreEquipo2[1])
@@ -42,7 +47,7 @@ def simularPartido(nombreEquipo, nombreEquipo2):
     cuarto = 1
     saque = 0
     maximo = 24
-    while tiempo > 0 and cuarto != 4:
+    while tiempo > 0 or cuarto != 4:
 
         print("\n\n" + str(tiempo) + " segundos del cuarto " + str(cuarto))
 
@@ -85,10 +90,10 @@ def simularPartido(nombreEquipo, nombreEquipo2):
                 equipo = (equipo + 1) % 2
                 print("Roba " + equipoOrden[equipo])
             else:
-                if faltaRealizada and tiempoUsado > 10:
+                if faltaRealizada and maximo - tiempoUsado < 14:
                     maximo = 14
                     print("Falta de " + equipoOrden[(equipo + 1) % 2] + ". Quedan " + str(maximo) + " segundos")
-                elif faltaRealizada and tiempoUsado < 10:
+                elif faltaRealizada and maximo - tiempoUsado > 10:
                     maximo = maximo - tiempoUsado
                     print("Falta de " + equipoOrden[(equipo + 1) % 2] + ". Quedan " + str(maximo) + " segundos")
                 else:
@@ -107,7 +112,12 @@ def simularPartido(nombreEquipo, nombreEquipo2):
                             equipo = (equipo + 1) % 2
                             print("Fallo de " + jugador + ". Rebote para " + equipoOrden[equipo])
                             # empieza una nueva posesión del rival
-
+                    else:
+                        if jugador != jugadorAsiste:
+                            print("Canasta de " + jugador + " con asistencia de " + jugadorAsiste)
+                        else:
+                            print("Canasta de " + jugador + " con una gran jugada individual")
+                        print(equipoOrden[0] + " " + str(estadisticasEquipos[equipoOrden[0]]["Puntos"]) + " - " + str(estadisticasEquipos[equipoOrden[0]]["Puntos"]) + " " + equipoOrden[1])
         # Si fin de cuarto se sacan los datos del mismo
         if tiempo <= 0:
             finCuarto()
@@ -153,6 +163,7 @@ def robo(equipo):
                 maximo = valor
                 elegido = jugador
         estadisticasJugadores[equipo][elegido]["EstadisticasPartido"]["Robos"] += 1
+        estadisticasEquipos[equipo]["Robos"] += 1
         return True
     return False
 
@@ -280,9 +291,22 @@ def finCuarto():
 
 
 def finPartido():
-    global estadisticasEquipos
+    global estadisticasEquipos; global estadisticasJugadores
     # Recopilar datos finales
-    print(estadisticasEquipos)
+    for equipo in estadisticasEquipos:
+        print(equipo)
+        print("\t" + str(estadisticasEquipos[equipo]["Puntos"]) + " puntos")
+        print("\t" + str(estadisticasEquipos[equipo]["Rebotes"]) + " rebotes")
+        print("\t" + str(estadisticasEquipos[equipo]["Faltas"]) + " faltas")
+        print("\t" + str(estadisticasEquipos[equipo]["Robos"]) + " robos")
+    for equipo in estadisticasJugadores:
+        print(equipo)
+        for jugador in estadisticasJugadores[equipo]:
+            print("\t" + jugador)
+            print("\t" + "\t" + str(estadisticasJugadores[equipo][jugador]["EstadisticasPartido"]["Puntos"]) + " puntos")
+            print("\t" + "\t" + str(estadisticasJugadores[equipo][jugador]["EstadisticasPartido"]["Robos"]) + " robos")
+            print("\t" + "\t" + str(estadisticasJugadores[equipo][jugador]["EstadisticasPartido"]["Tiros"]) + " tiros")
+            print("\t" + "\t" + str(estadisticasJugadores[equipo][jugador]["EstadisticasPartido"]["TirosAnotados"]) + " tiros anotados")
 
 
 def aplicaDistribucionJugador(jugador, estadistica):
@@ -690,7 +714,7 @@ def aplicaDistribucionEquipo(equipo, estadistica, tiempo=0 ):
         loc = distribucionesEquipos[equipo][estadistica]["parametros"]["loc"]
         scale = distribucionesEquipos[equipo][estadistica]["parametros"]["scale"]
         a = distribucionesEquipos[equipo][estadistica]["parametros"]["a"]
-        val = skewcauchy.rvs(a, scale, size=1)
+        val = skewcauchy.rvs(a,loc, scale, size=1)
 
     elif distribucionesEquipos[equipo][estadistica]["nombre"] == "weibull_min":
         loc = distribucionesEquipos[equipo][estadistica]["parametros"]["loc"]
@@ -711,6 +735,8 @@ def aplicaDistribucionEquipo(equipo, estadistica, tiempo=0 ):
         min = distribucionesEquipos[equipo][estadistica]["min"]
         max = tiempo
         media = distribucionesEquipos[equipo][estadistica]["media"]
+        if max < media:
+            media = (max + min) / 2
         val = np.random.triangular(min, media, max, 1)
 
     else:
@@ -727,8 +753,8 @@ def inicializarEquipos(nombreLocal, nombreVisitante):
     jugadores = pickle.load(infile)
     infile.close()
 
-    estadisticasEquipos[nombreLocal] = { "Puntos": 0, "Rebotes": 0, "Faltas": 0, "Jugadores": [] }
-    estadisticasEquipos[nombreVisitante] = { "Puntos": 0, "Rebotes": 0, "Faltas": 0, "Jugadores": [] }
+    estadisticasEquipos[nombreLocal] = { "Puntos": 0, "Rebotes": 0, "Faltas": 0, "Robos": 0, "Jugadores": [] }
+    estadisticasEquipos[nombreVisitante] = { "Puntos": 0, "Rebotes": 0, "Faltas": 0, "Robos": 0, "Jugadores": [] }
     for jugador in jugadores:
         if jugadores[jugador]["Equipo"] == nombreLocal:
             estadisticasEquipos[nombreLocal]["Jugadores"].append(jugador)

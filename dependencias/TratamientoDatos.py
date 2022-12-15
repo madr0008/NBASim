@@ -211,17 +211,18 @@ def leerEstadisticasIndividualesEquipo():
         iterador = 0
         for row in reader:
             if row[1] != equipo2 and equipo2 != "":
+                posesionesPorEquipo = (48*60) / ((equiposDatos[equipo2]["Estadisticas"]["TiempoPosesion"] + equiposDatos[equipo]["Estadisticas"]["TiempoPosesion"]) / 2)
                 equiposDatos[equipo2]["Estadisticas"]["Robos"].append(robos)
                 equiposDatos[equipo2]["Estadisticas"]["Faltas"].append(faltas)
                 equiposDatos[equipo2]["Estadisticas"]["Tiros"].append(tiros)
                 if robos == 0:
                     equiposDatos[equipo2]["Estadisticas"]["PorcentajeRobos"].append(robos)
                 else:
-                    equiposDatos[equipo2]["Estadisticas"]["PorcentajeRobos"].append(robos / (robos + equiposDatos[equipo]["Estadisticas"]["Robos"][len(equiposDatos[equipo]["Estadisticas"]["Robos"]) - 1]))
-                equiposDatos[equipo2]["Estadisticas"]["PorcentajeFaltas"].append(faltas / (faltas + equiposDatos[equipo]["Estadisticas"]["Faltas"][len(equiposDatos[equipo]["Estadisticas"]["Faltas"]) - 1]))
+                    equiposDatos[equipo2]["Estadisticas"]["PorcentajeRobos"].append(robos / posesionesPorEquipo)
+                equiposDatos[equipo2]["Estadisticas"]["PorcentajeFaltas"].append(faltas / posesionesPorEquipo)
                 if  equiposDatos[equipo]["Estadisticas"]["Robos"][len(equiposDatos[equipo]["Estadisticas"]["Robos"]) - 1] != 0:
-                    equiposDatos[equipo]["Estadisticas"]["PorcentajeRobos"].append(equiposDatos[equipo]["Estadisticas"]["Robos"][len(equiposDatos[equipo]["Estadisticas"]["Robos"]) - 1] / (robos + equiposDatos[equipo]["Estadisticas"]["Robos"][len(equiposDatos[equipo]["Estadisticas"]["Robos"]) - 1]))
-                equiposDatos[equipo]["Estadisticas"]["PorcentajeFaltas"].append(equiposDatos[equipo]["Estadisticas"]["Faltas"][len(equiposDatos[equipo]["Estadisticas"]["Faltas"]) - 1] / (robos + equiposDatos[equipo]["Estadisticas"]["Faltas"][len(equiposDatos[equipo]["Estadisticas"]["Faltas"]) - 1]))
+                    equiposDatos[equipo]["Estadisticas"]["PorcentajeRobos"].append(equiposDatos[equipo]["Estadisticas"]["Robos"][len(equiposDatos[equipo]["Estadisticas"]["Robos"]) - 1] / posesionesPorEquipo)
+                equiposDatos[equipo]["Estadisticas"]["PorcentajeFaltas"].append(equiposDatos[equipo]["Estadisticas"]["Faltas"][len(equiposDatos[equipo]["Estadisticas"]["Faltas"]) - 1] / posesionesPorEquipo)
                 robos = 0
                 faltas = 0
                 tiros = 0
