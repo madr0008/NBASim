@@ -31,7 +31,7 @@ def simularPartido(nombreEquipo, nombreEquipo2):
     distribucionesEquipos = pickle.load(infile)
     infile.close()
 
-    print("Paso 2")
+    # print("Paso 2")
     # distribucionesJugadores = TratamientoDatos.ajustarDatosJugadores(nombreEquipo[1], nombreEquipo2[1])
     # fichero_datos = open(".\Ficheros\DistribucionesJugadores", "wb")
     # pickle.dump(distribucionesJugadores, fichero_datos)

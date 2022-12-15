@@ -220,9 +220,9 @@ def leerEstadisticasIndividualesEquipo():
                 else:
                     equiposDatos[equipo2]["Estadisticas"]["PorcentajeRobos"].append(robos / posesionesPorEquipo)
                 equiposDatos[equipo2]["Estadisticas"]["PorcentajeFaltas"].append(faltas / posesionesPorEquipo)
-                if  equiposDatos[equipo]["Estadisticas"]["Robos"][len(equiposDatos[equipo]["Estadisticas"]["Robos"]) - 1] != 0:
+                if equiposDatos[equipo]["Estadisticas"]["Robos"][len(equiposDatos[equipo]["Estadisticas"]["Robos"]) - 1] != 0:
                     equiposDatos[equipo]["Estadisticas"]["PorcentajeRobos"].append(equiposDatos[equipo]["Estadisticas"]["Robos"][len(equiposDatos[equipo]["Estadisticas"]["Robos"]) - 1] / posesionesPorEquipo)
-                equiposDatos[equipo]["Estadisticas"]["PorcentajeFaltas"].append(equiposDatos[equipo]["Estadisticas"]["Faltas"][len(equiposDatos[equipo]["Estadisticas"]["Faltas"]) - 1] / posesionesPorEquipo)
+                equiposDatos[equipo]["Estadisticas"]["PorcentajeFaltas"].append(equiposDatos[equipo]["Estadisticas"]["Faltas"][len(equiposDatos[equipo]["Estadisticas"]["Faltas"]) - 1] / (posesionesPorEquipo * 2 / 3))
                 robos = 0
                 faltas = 0
                 tiros = 0
