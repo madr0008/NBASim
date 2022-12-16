@@ -161,7 +161,7 @@ def leerPartidosJugadores():
                         jugadores[row[5]]["Estadisticas"]["ProbabilidadTiro"].append(int(float(row[11])) / equiposDatos[iterador[jugadores[row[5]]["Equipo"]]["ID"]]["Estadisticas"]["Tiros"][iterador[jugadores[row[5]]["Equipo"]]["Numero"]])
                     except :
                         pass
-                if row[12] != "":
+                if row[12] != "" and row[11] != "":
                     valor = row[12].replace(",",".")
                     jugadores[row[5]]["Estadisticas"]["PorcentajeAciertos"].append(float(valor))
                 if row[14] != "":
