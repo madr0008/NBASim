@@ -118,7 +118,8 @@ def simularPartido(nombreEquipo, nombreEquipo2):
                             print("Canasta de " + jugador + " con asistencia de " + jugadorAsiste)
                         else:
                             print("Canasta de " + jugador + " con una gran jugada individual")
-                        print(equipoOrden[0] + " " + str(estadisticasEquipos[equipoOrden[0]]["Puntos"]) + " - " + str(estadisticasEquipos[equipoOrden[0]]["Puntos"]) + " " + equipoOrden[1])
+                        print(equipoOrden[0] + " " + str(estadisticasEquipos[equipoOrden[0]]["Puntos"]) + " - " + str(estadisticasEquipos[equipoOrden[1]]["Puntos"]) + " " + equipoOrden[1])
+                        equipo = (equipo + 1) % 2
         # Si fin de cuarto se sacan los datos del mismo
         if tiempo <= 0:
             finCuarto()
@@ -189,37 +190,41 @@ def asistencia(equipo):
     valores = {}
     for jugador in estadisticasEquipos[equipo]["Jugadores"]:
         valor = aplicaDistribucionJugador(jugador,"Asistencias")[0]
-        if valor != -1:
+        if valor > 0:
+            valores[jugador] = [maximo, (maximo + valor)]
             maximo += valor
-            valores[jugador] = maximo
     resultado = random.uniform(0, maximo)
     for jugador in valores:
-        if resultado <= valores[jugador]:
+        if (resultado >= valores[jugador][0]) and (resultado <= valores[jugador][1]) :
             elegido = jugador
     maximo = aplicaDistribucionJugador(elegido, "Asistencias")[0]
     resultado = random.random()
 
     # Se realiza la asistencia
     if resultado < maximo:
-        # Decidir el jugador que realizara el tiro
-        maximo = 0
-        valores = {}
-        for jugador in estadisticasEquipos[equipo]["Jugadores"]:
-            if jugador != elegido:
-                valor = aplicaDistribucionJugador(jugador, "ProbabilidadTiro")[0]
-                if valor != -1:
-                    valores[jugador] = valor
-        dict(sorted(valores.items(), key=lambda item: item[1]))
-        for jugador in valores:
-            maximo += valores[jugador]
-            valores[jugador] = maximo
-        resultado = random.uniform(0, maximo)
-        for jugador in valores:
-            if resultado <= valores[jugador]:
-                elegidoTiro = jugador
+        hayAsistencia = True
+    else :
+        hayAsistencia = False
+
+    # Decidir el jugador que realizara el tiro
+    maximo = 0
+    valores = {}
+    for jugador in estadisticasEquipos[equipo]["Jugadores"]:
+        if jugador != elegido or not hayAsistencia:
+            valor = aplicaDistribucionJugador(jugador, "ProbabilidadTiro")[0]
+            if valor > 0:
+                valores[jugador] = []
+                valores[jugador].append(maximo)
+                maximo += valor
+                valores[jugador].append(maximo)
+    resultado = random.uniform(0, maximo)
+    for jugador in valores:
+        if (resultado >= valores[jugador][0]) and (resultado <= valores[jugador][1]) :
+            elegidoTiro = jugador
+        
     # No se realiza asistencia tira el jugador que tiene la bola
-    else:
-        elegidoTiro = elegido
+    if not hayAsistencia:
+        elegido = elegidoTiro
 
     return elegidoTiro, elegido
 
