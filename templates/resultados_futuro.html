@@ -63,8 +63,7 @@
         <div class="container"><a class="navbar-brand logo" href="/">NBASim</a><button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-1"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
             <div class="collapse navbar-collapse" id="navcol-1">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="/elegir_equipos_pasado">SIMULAR A PASADO</a></li>
-                    <li class="nav-item"><a class="nav-link active" href="/elegir_equipos_futuro">SIMULAR A FUTURO</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/elegir_equipos_futuro">SIMULAR</a></li>
                     <li class="nav-item"><a class="nav-link" href="/">INICIO</a></li>
                 </ul>
             </div>
@@ -95,7 +94,7 @@
                                 <div class="col-md-2 feature-box">
                                     <img src="static/img/equipos/{{ equipo1[0] }}.png" width="75%">
                                 </div>
-                                <div class="col-md-3" id="content">
+                                <div class="col-md-3" id="content" style="visibility:hidden;">
                                     <div class="round basketBall" id="basketBall1">
                                                 <div class="in round">
                                                     <div class="in round"></div>
@@ -118,7 +117,7 @@
                                         12:00
                                     </h4>
                                 </div>
-                                <div class="col-md-3" id="content2">
+                                <div class="col-md-3" id="content2" style="visibility:hidden;">
                                     <div class="round basketBall" id="basketBall2">
                                                 <div class="in round">
                                                     <div class="in round"></div>
@@ -360,8 +359,8 @@ function reloj() {
                 document.getElementById("img1").src = "static/img/equipos/" + equipo1[0] + ".png";
                 document.getElementById("img1").style = "display:inline;";
             } else {
-                document.getElementById("content2").style = "visibility:hidden;";
-                document.getElementById("content").style = "visibility:visible;";
+                document.getElementById("content").style = "visibility:hidden;";
+                document.getElementById("content2").style = "visibility:visible;";
                 document.getElementById("img1").style = "display:none;";
                 document.getElementById("img2").src = "static/img/equipos/" + equipo2[0] + ".png";
                 document.getElementById("img2").style = "display:inline;";
@@ -482,6 +481,8 @@ function reloj() {
         document.getElementById("accionEquipo").innerHTML = "¡Acaba el partido!";
         document.getElementById("botones").style = "display:none;";
         document.getElementById("estadisticas").style = "display: block";
+        document.getElementById("content2").style = "display:none;";
+        document.getElementById("content").style = "display:none;";
     } else if (cuarto < 4) {
         document.getElementById("img1").style = "display:none;";
         document.getElementById("img2").style = "display:none;";
@@ -529,6 +530,8 @@ function omitir() {
     document.getElementById("accionEquipo").innerHTML = "¡Acaba el partido!";
     document.getElementById("estadisticas").style = "display: block";
     document.getElementById("marcador").innerHTML = vis + " - " + loc;
+    document.getElementById("content2").style = "display:none;";
+    document.getElementById("content").style = "display:none;";
 }
 
 var boton1 = document.getElementById("botonLocal");
