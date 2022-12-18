@@ -18,7 +18,16 @@ equipoOrden = []
 tiempoParaTiro = 2
 
 def simularPartido(nombreEquipo, nombreEquipo2):
-    global distribucionesEquipos; global distribucionesJugadores; global equipoOrden; global tiempoParaTiro; global diccionarioSolucion
+    global distribucionesEquipos; global distribucionesJugadores; global equipoOrden; global tiempoParaTiro; global diccionarioSolucion; global estadisticasJugadores; global estadisticasEquipos
+
+    distribucionesEquipos = {}
+    distribucionesJugadores = {}
+    diccionarioSolucion = {}
+
+    estadisticasJugadores = {}
+    estadisticasEquipos = {}
+
+    equipoOrden = []
     
     TratamientoDatos.cargaDatosGeneral()
     infile = open(".\Ficheros\DistribucionesEquipos", "rb")
@@ -852,7 +861,6 @@ def inicializarEquipos(nombreLocal, nombreVisitante):
     infile = open(".\Ficheros\Jugadores", "rb")
     jugadores = pickle.load(infile)
     infile.close()
-
     estadisticasEquipos[nombreLocal] = { "Tiros": 0, "TirosAnotados": 0,  "PCT_TirosAnotados": 0.0, "TriplesAnotados": 0, "Triples": 0,
                                          "PCT_TriplesAnotados": 0.0, "Rebotes": 0,"Asistencias": 0, "Robos": 0, "Faltas": 0, "Puntos":0, "Jugadores": [] }
     estadisticasEquipos[nombreVisitante] = { "TirosAnotados": 0, "Tiros": 0, "PCT_TirosAnotados": 0.0, "TriplesAnotados": 0, "Triples": 0,

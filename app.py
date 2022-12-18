@@ -82,7 +82,6 @@ def resultados() :
 #Ruta para elegir parámetros a simular
 @app.route('/resultados_futuro', methods=['GET', 'POST'])
 def simular_futuro() :
-    global datos
     if request.method == 'POST':
         temporada = int(request.form['temporada'])
         equipo1 = request.form['equipo1'].split(",")
