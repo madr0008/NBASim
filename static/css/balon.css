@@ -1,0 +1,108 @@
+
+	#content{
+		display: block;
+		position: relative;
+	}
+	
+	#content2{
+		display: block;
+		position: relative;
+	}
+
+
+
+	.round{
+		-webkit-border-radius: 99em;
+		-moz-border-radius: 99em;
+		border-radius: 99em;
+	}
+
+
+	/*BASKET BALL*/
+
+	#basketBall1{
+		top: 50%;
+		left: 40%;
+		-webkit-animation-name:basketBallAnim; 
+	    animation-name:basketBallAnim;
+	    -webkit-animation-delay: 4s; 
+	    animation-delay: 4s; 
+	    -webkit-animation-duration: 6s; 
+	    animation-duration: 6s;
+	    -webkit-animation-timing-function: ease-out; 
+	    animation-timing-function: ease-out;  
+	    animation-fill-mode: forwards;
+	    -webkit-animation-fill-mode: forwards; 
+	    transform: rotate(-45deg);
+		-webkit-transform: rotate(-45deg);
+	}
+	
+	#basketBall2{
+		top: 50%;
+		right: 40%;
+		-webkit-animation-name:basketBallAnim; 
+	    animation-name:basketBallAnim;
+	    -webkit-animation-delay: 4s; 
+	    animation-delay: 4s; 
+	    -webkit-animation-duration: 6s; 
+	    animation-duration: 6s;
+	    -webkit-animation-timing-function: ease-out; 
+	    animation-timing-function: ease-out;  
+	    animation-fill-mode: forwards;
+	    -webkit-animation-fill-mode: forwards; 
+	    transform: rotate(-45deg);
+		-webkit-transform: rotate(-45deg);
+	}
+
+	
+
+	.basketBall{
+		overflow:hidden;
+		background-color:#C26125;
+		display: block;
+		position: absolute;
+		width: 5.8%;
+		padding-bottom: 5.8%;
+	}
+
+	.basketBall > .in{
+		display: block;
+		position: absolute;
+		background-color: #AB4D24;
+		width: 100%;
+		padding: 5%;
+	}
+
+	.basketBall > .in:nth-child(1){
+		left: 0%;
+		top: -78%;
+	}
+
+	.basketBall .in:nth-child(2){
+		left: 0%;
+		top: 72%;
+	}
+
+	.basketBall .in > .in{
+		display: block;
+		position: relative;
+		width: 100%;
+		padding-bottom: 100%;
+		background-color: #C26125;
+	}
+	
+	.basketBall .rectangle{
+		display: block;
+		position: absolute;
+		width: 125%;
+		padding-bottom: 5%;
+		background-color: #AB4D24;
+		top: 50%;
+		left: -11%;
+	}
+
+	.basketBall .rectangle + .rectangle{
+		transform: rotate(90deg);
+		-webkit-transform: rotate(90deg);
+		top: 53%;
+	}

@@ -69,7 +69,7 @@ def simularPartido(nombreEquipo, nombreEquipo2):
             if not prorroga :
                 pbp['cuarto'].append(cuarto)
             else :
-                pbp['cuarto'].append("OT" + contadorProrroga)
+                pbp['cuarto'].append("OT" + str(contadorProrroga))
             pbp['tiempo'].append(tiempo)
             pbp['resultado'].append("-")
 
@@ -84,7 +84,7 @@ def simularPartido(nombreEquipo, nombreEquipo2):
             if not prorroga :
                 pbp['cuarto'].append(cuarto)
             else :
-                pbp['cuarto'].append("OT" + contadorProrroga)
+                pbp['cuarto'].append("OT" + str(contadorProrroga))
             pbp['tiempo'].append(tiempo)
             pbp['resultado'].append("-")
 
@@ -116,7 +116,7 @@ def simularPartido(nombreEquipo, nombreEquipo2):
                 if not prorroga :
                     pbp['cuarto'].append(cuarto)
                 else :
-                    pbp['cuarto'].append("OT" + contadorProrroga)
+                    pbp['cuarto'].append("OT" + str(contadorProrroga))
                 pbp['tiempo'].append(tiempo)
                 pbp['resultado'].append("-")
             else:
@@ -129,7 +129,7 @@ def simularPartido(nombreEquipo, nombreEquipo2):
                     if not prorroga :
                         pbp['cuarto'].append(cuarto)
                     else :
-                        pbp['cuarto'].append("OT" + contadorProrroga)
+                        pbp['cuarto'].append("OT" + str(contadorProrroga))
                     pbp['tiempo'].append(tiempo)
                     pbp['resultado'].append("-")
                 elif faltaRealizada and maximo - tiempoUsado > 10:
@@ -141,7 +141,7 @@ def simularPartido(nombreEquipo, nombreEquipo2):
                     if not prorroga :
                         pbp['cuarto'].append(cuarto)
                     else :
-                        pbp['cuarto'].append("OT" + contadorProrroga)
+                        pbp['cuarto'].append("OT" + str(contadorProrroga))
                     pbp['tiempo'].append(tiempo)
                     pbp['resultado'].append("-")
                 else:
@@ -161,7 +161,7 @@ def simularPartido(nombreEquipo, nombreEquipo2):
                             if not prorroga :
                                 pbp['cuarto'].append(cuarto)
                             else :
-                                pbp['cuarto'].append("OT" + contadorProrroga)
+                                pbp['cuarto'].append("OT" + str(contadorProrroga))
                             pbp['tiempo'].append(tiempo)
                             pbp['resultado'].append("-")
                             # juega el mismo equipo el balón
@@ -175,7 +175,7 @@ def simularPartido(nombreEquipo, nombreEquipo2):
                             if not prorroga :
                                 pbp['cuarto'].append(cuarto)
                             else :
-                                pbp['cuarto'].append("OT" + contadorProrroga)
+                                pbp['cuarto'].append("OT" + str(contadorProrroga))
                             pbp['tiempo'].append(tiempo)
                             pbp['resultado'].append("-")
                             # empieza una nueva posesión del rival
@@ -187,7 +187,7 @@ def simularPartido(nombreEquipo, nombreEquipo2):
                         if not prorroga :
                             pbp['cuarto'].append(cuarto)
                         else :
-                            pbp['cuarto'].append("OT" + contadorProrroga)
+                            pbp['cuarto'].append("OT" + str(contadorProrroga))
                         pbp['tiempo'].append(tiempo)
                         pbp['resultado'].append(str(estadisticasEquipos[equipoOrden[0]]["Puntos"]) + " - " + str(estadisticasEquipos[equipoOrden[1]]["Puntos"]))
                         equipo = (equipo + 1) % 2

@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,400i,700,700i,600,600i&amp;display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/baguettebox.js/1.11.1/baguetteBox.min.css">
     <link rel="stylesheet" href="static/css/vanilla-zoom.min.css">
+    <link rel="stylesheet" href="static/css/balon.css">
 </head>
 <style>
     .button_plus {
@@ -94,6 +95,18 @@
                                 <div class="col-md-2 feature-box">
                                     <img src="static/img/equipos/{{ equipo1[0] }}.png" width="75%">
                                 </div>
+                                <div class="col-md-3" id="content">
+                                    <div class="round basketBall" id="basketBall1">
+                                                <div class="in round">
+                                                    <div class="in round"></div>
+                                                </div>
+                                                <div class="in round">
+                                                    <div class="in round"></div>
+                                                </div>
+                                                <div class="rectangle"></div>
+                                                <div class="rectangle"></div>
+                                    </div>
+                                </div>
                                 <div class="col text-center">
                                     <h5 id="cuarto" class="text-center">
                                         Cuarto: 1
@@ -104,6 +117,18 @@
                                     <h4 id="contador" class="text-center">
                                         12:00
                                     </h4>
+                                </div>
+                                <div class="col-md-3" id="content2">
+                                    <div class="round basketBall" id="basketBall2">
+                                                <div class="in round">
+                                                    <div class="in round"></div>
+                                                </div>
+                                                <div class="in round">
+                                                    <div class="in round"></div>
+                                                </div>
+                                                <div class="rectangle"></div>
+                                                <div class="rectangle"></div>
+                                    </div>
                                 </div>
                                 <div class="col-md-2 feature-box">
                                     <img src="static/img/equipos/{{ equipo2[0] }}.png" width="75%">
@@ -274,10 +299,14 @@ function reloj() {
             var equipo = pbp["equipo"][cont];
             document.getElementById("accionEquipo").innerHTML = "¡Los " + equipo + " ganan el salto inicial!";
             if (equipo == equipo1[1]) {
+                document.getElementById("content2").style = "visibility:hidden;";
+                document.getElementById("content").style = "visibility:visible;";
                 document.getElementById("img2").style = "display:none;";
                 document.getElementById("img1").src = "static/img/equipos/" + equipo1[0] + ".png";
                 document.getElementById("img1").style = "display:inline;";
             } else {
+                document.getElementById("content").style = "visibility:hidden;";
+                document.getElementById("content2").style = "visibility:visible;";
                 document.getElementById("img1").style = "display:none;";
                 document.getElementById("img2").src = "static/img/equipos/" + equipo2[0] + ".png";
                 document.getElementById("img2").style = "display:inline;";
@@ -288,10 +317,14 @@ function reloj() {
             var equipo = pbp["equipo"][cont];
             document.getElementById("accionEquipo").innerHTML = "¡Arranca el " + cuarto + "cuarto! Sacan los " + equipo;
             if (equipo == equipo1[1]) {
+                document.getElementById("content2").style = "visibility:hidden;";
+                document.getElementById("content").style = "visibility:visible;";
                 document.getElementById("img2").style = "display:none;";
                 document.getElementById("img1").src = "static/img/equipos/" + equipo1[0] + ".png";
                 document.getElementById("img1").style = "display:inline;";
             } else {
+                document.getElementById("content").style = "visibility:hidden;";
+                document.getElementById("content2").style = "visibility:visible;";
                 document.getElementById("img1").style = "display:none;";
                 document.getElementById("img2").src = "static/img/equipos/" + equipo2[0] + ".png";
                 document.getElementById("img2").style = "display:inline;";
@@ -303,10 +336,14 @@ function reloj() {
             var jugador = pbp["jugador"][cont];
             document.getElementById("accionEquipo").innerHTML = "¡Roba " + jugador + " para los " + equipo + "!";
             if (equipo == equipo1[1]) {
+                document.getElementById("content2").style = "visibility:hidden;";
+                document.getElementById("content").style = "visibility:visible;";
                 document.getElementById("img2").style = "display:none;";
                 document.getElementById("img1").src = "https://ak-static.cms.nba.com/wp-content/uploads/headshots/nba/latest/260x190/" + ids[jugador] + ".png";
                 document.getElementById("img1").style = "display:inline;";
             } else {
+                document.getElementById("content").style = "visibility:hidden;";
+                document.getElementById("content2").style = "visibility:visible;";
                 document.getElementById("img1").style = "display:none;";
                 document.getElementById("img2").src = "https://ak-static.cms.nba.com/wp-content/uploads/headshots/nba/latest/260x190/" + ids[jugador] + ".png";
                 document.getElementById("img2").style = "display:inline;";
@@ -317,10 +354,14 @@ function reloj() {
             var equipo = pbp["equipo"][cont];
             document.getElementById("accionEquipo").innerHTML = "Falta sobre los " + equipo;
             if (equipo == equipo1[1]) {
+                document.getElementById("content2").style = "visibility:hidden;";
+                document.getElementById("content").style = "visibility:visible;";
                 document.getElementById("img2").style = "display:none;";
                 document.getElementById("img1").src = "static/img/equipos/" + equipo1[0] + ".png";
                 document.getElementById("img1").style = "display:inline;";
             } else {
+                document.getElementById("content2").style = "visibility:hidden;";
+                document.getElementById("content").style = "visibility:visible;";
                 document.getElementById("img1").style = "display:none;";
                 document.getElementById("img2").src = "static/img/equipos/" + equipo2[0] + ".png";
                 document.getElementById("img2").style = "display:inline;";
@@ -346,10 +387,14 @@ function reloj() {
                     }
                 }
                 if (equipo == equipo1[1]) {
+                    document.getElementById("content2").style = "visibility:hidden;";
+                    document.getElementById("content").style = "visibility:visible;";
                     document.getElementById("img2").style = "display:none;";
                     document.getElementById("img1").src = ("https://ak-static.cms.nba.com/wp-content/uploads/headshots/nba/latest/260x190/" + ids[jugador] + ".png");
                     document.getElementById("img1").style = "display:inline;";
                 } else {
+                    document.getElementById("content").style = "visibility:hidden;";
+                    document.getElementById("content2").style = "visibility:visible;";
                     document.getElementById("img1").style = "display:none;";
                     document.getElementById("img2").src = "https://ak-static.cms.nba.com/wp-content/uploads/headshots/nba/latest/260x190/" + ids[jugador] + ".png";
                     document.getElementById("img2").style = "display:inline;";
@@ -357,6 +402,8 @@ function reloj() {
                 document.getElementById("marcador").innerHTML = pbp["resultado"][cont];
             } else if (aux[2] == "defensivo") {
                 if (equipo == equipo1[1]) {
+                    document.getElementById("content2").style = "visibility:hidden;";
+                    document.getElementById("content").style = "visibility:visible;";
                     document.getElementById("img2").style = "display:none;";
                     if (aux[1] == 2) {
                         document.getElementById("accionEquipo").innerHTML = "Falló " + jugador + " de 2. ¡Rebote de " + aux[3] + " para que jueguen los " + equipo1[1] + "!";
@@ -366,6 +413,8 @@ function reloj() {
                     document.getElementById("img1").src = "https://ak-static.cms.nba.com/wp-content/uploads/headshots/nba/latest/260x190/" + ids[aux[3]] + ".png";
                     document.getElementById("img1").style = "display:inline;";
                 } else {
+                    document.getElementById("content").style = "visibility:hidden;";
+                    document.getElementById("content2").style = "visibility:visible;";
                     document.getElementById("img1").style = "display:none;";
                     if (aux[1] == 2) {
                         document.getElementById("accionEquipo").innerHTML = "Falló " + jugador + " de 2. ¡Rebote de " + aux[3] + " para que jueguen los " + equipo2[1] + "!";
@@ -377,6 +426,8 @@ function reloj() {
                 }
             } else {
                 if (equipo == equipo1[1]) {
+                    document.getElementById("content2").style = "visibility:hidden;";
+                    document.getElementById("content").style = "visibility:visible;";
                     document.getElementById("img2").style = "display:none;";
                     if (aux[1] == 2) {
                         document.getElementById("accionEquipo").innerHTML = "Falló " + jugador + " de 2. ¡Pero ahí está " + aux[3] + " con el rebote ofensivo para que jueguen de nuevo los " + equipo1[1] + "!";
@@ -386,6 +437,8 @@ function reloj() {
                     document.getElementById("img1").src = "https://ak-static.cms.nba.com/wp-content/uploads/headshots/nba/latest/260x190/" + ids[aux[3]] + ".png";
                     document.getElementById("img1").style = "display:inline;";
                 } else {
+                    document.getElementById("content").style = "visibility:hidden;";
+                    document.getElementById("content2").style = "visibility:visible;";
                     document.getElementById("img1").style = "display:none;";
                     if (aux[1] == 2) {
                         document.getElementById("accionEquipo").innerHTML = "Falló " + jugador + " de 2. ¡Pero ahí está " + aux[3] + " con el rebote ofensivo para que jueguen de nuevo los " + equipo2[1] + "!";
