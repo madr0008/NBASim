@@ -8,7 +8,7 @@ import numpy as np
 
 distribucionesEquipos = {}
 distribucionesJugadores = {}
-
+diccionarioSolucion = {}
 
 estadisticasJugadores = {}
 estadisticasEquipos = {}
@@ -18,22 +18,9 @@ equipoOrden = []
 tiempoParaTiro = 2
 
 def simularPartido(nombreEquipo, nombreEquipo2):
-    global distribucionesEquipos; global distribucionesJugadores; global equipoOrden; global tiempoParaTiro
-    print("Empieza")
+    global distribucionesEquipos; global distribucionesJugadores; global equipoOrden; global tiempoParaTiro; global diccionarioSolucion
+    
     TratamientoDatos.cargaDatosGeneral()
-    print("Paso 1")
-    # distribucionesEquipos[nombreEquipo[1]] = TratamientoDatos.ajustarDatos(nombreEquipo[1], tiempoParaTiro, 24)
-    # distribucionesEquipos[nombreEquipo2[1]] = TratamientoDatos.ajustarDatos(nombreEquipo2[1], tiempoParaTiro, 24)
-    # fichero_datos = open(".\Ficheros\DistribucionesEquipos", "wb")
-    # pickle.dump(distribucionesEquipos, fichero_datos)
-    # fichero_datos.close()
-    #
-    #
-    # print("Paso 2")
-    # distribucionesJugadores = TratamientoDatos.ajustarDatosJugadores(nombreEquipo[1], nombreEquipo2[1])
-    # fichero_datos = open(".\Ficheros\DistribucionesJugadores", "wb")
-    # pickle.dump(distribucionesJugadores, fichero_datos)
-    # fichero_datos.close()
     infile = open(".\Ficheros\DistribucionesEquipos", "rb")
     distribucionesEquipos = pickle.load(infile)
     infile.close()
@@ -41,16 +28,17 @@ def simularPartido(nombreEquipo, nombreEquipo2):
     distribucionesJugadores = pickle.load(infile)
     infile.close()
 
-    print("Paso 3")
+    
     inicializarEquipos(nombreEquipo[1], nombreEquipo2[1])
     inicializarJugadores(nombreEquipo[1], nombreEquipo2[1])
+
+    pbp = {'equipo':[], 'jugador':[], 'accion':[], 'cuarto':[], 'tiempo':[], 'resultado':[]}
     tiempo = 720
     cuarto = 1
     saque = 0
     maximo = 24
+    
     while tiempo > 0 or cuarto != 4:
-
-        print("\n\n" + str(tiempo) + " segundos del cuarto " + str(cuarto))
 
         if cuarto == 1 and tiempo == 720:
 
@@ -60,78 +48,123 @@ def simularPartido(nombreEquipo, nombreEquipo2):
             equipoOrden.append(nombreEquipo2[1])
             # determinamos el equipo que saltara el siguiente cuarto
             saque = (equipo + 1) % 2
-            print("Saca el equipo " + equipoOrden[equipo])
+            
+            pbp['equipo'].append(equipoOrden[equipo])
+            pbp['jugador'].append("-")
+            pbp['accion'].append("ganaSalto")
+            pbp['cuarto'].append(cuarto)
+            pbp['tiempo'].append(tiempo)
+            pbp['resultado'].append("-")
 
         elif tiempo == 720:
 
             equipo = saque  # se selecciona el equipo al que le toca sacar de inicio
             saque = (saque + saque) % 2
-            print("Saca " + equipoOrden[equipo])
+            
+            pbp['equipo'].append(equipoOrden[equipo])
+            pbp['jugador'].append("-")
+            pbp['accion'].append("saca")
+            pbp['cuarto'].append(cuarto)
+            pbp['tiempo'].append(tiempo)
+            pbp['resultado'].append("-")
 
         # Se reduce el tiempo de posesión del reloj
         if tiempo > 24:
+            tiempoUsado = tiempoPosesion(equipoOrden[equipo], maximo)
+        elif tiempo > 14 and maximo == 14:
             tiempoUsado = tiempoPosesion(equipoOrden[equipo], maximo)
         else:
             tiempoUsado = tiempoPosesion(equipoOrden[equipo], tiempo)
 
         if tiempoUsado == -1:
             tiempo = -1
-            print("No hay tiempo para mas!")
+            
         else:
             tiempo -= tiempoUsado
 
         if tiempo >= 0:
 
-            print("La jugada dura " + str(tiempoUsado) + " segundos")
-
             # Desarrollo de la jugada
-            jugador, jugadorAsiste, roboRealizado, faltaRealizada = jugada(equipo)
+            jugador, jugadorAsiste, roboRealizado, faltaRealizada, robador = jugada(equipo)
             if roboRealizado:
                 maximo = 24
                 equipo = (equipo + 1) % 2
-                print("Roba " + equipoOrden[equipo])
+                
+                pbp['equipo'].append(equipoOrden[equipo])
+                pbp['jugador'].append(robador)
+                pbp['accion'].append("roba")
+                pbp['cuarto'].append(cuarto)
+                pbp['tiempo'].append(tiempo)
+                pbp['resultado'].append("-")
             else:
                 if faltaRealizada and maximo - tiempoUsado < 14:
                     maximo = 14
-                    print("Falta de " + equipoOrden[(equipo + 1) % 2] + ". Quedan " + str(maximo) + " segundos")
+                    
+                    pbp['equipo'].append(equipoOrden[equipo])
+                    pbp['jugador'].append("-")
+                    pbp['accion'].append("falta")
+                    pbp['cuarto'].append(cuarto)
+                    pbp['tiempo'].append(tiempo)
+                    pbp['resultado'].append("-")
                 elif faltaRealizada and maximo - tiempoUsado > 10:
                     maximo = maximo - tiempoUsado
-                    print("Falta de " + equipoOrden[(equipo + 1) % 2] + ". Quedan " + str(maximo) + " segundos")
+                    
+                    pbp['equipo'].append(equipoOrden[equipo])
+                    pbp['jugador'].append("-")
+                    pbp['accion'].append("falta")
+                    pbp['cuarto'].append(cuarto)
+                    pbp['tiempo'].append(tiempo)
+                    pbp['resultado'].append("-")
                 else:
                     # Desarrollo del tiro
-                    acierto = tiro(jugador,jugadorAsiste,equipoOrden[equipo])
+                    acierto, tipo = tiro(jugador,jugadorAsiste,equipoOrden[equipo])
 
                     # Si se falla el tiro se juega el rebote
                     if not acierto:
-                        reboteCogido = rebote(equipoOrden[equipo], equipoOrden[(equipo + 1) % 2])
+                        reboteCogido, reboteador = rebote(equipoOrden[equipo], equipoOrden[(equipo + 1) % 2])
+                        
                         if reboteCogido:
                             maximo = 14
-                            print("Fallo de " + jugador + ". Rebote para " + equipoOrden[equipo])
+                            
+                            pbp['equipo'].append(equipoOrden[equipo])
+                            pbp['jugador'].append(jugador)
+                            pbp['accion'].append("tiro_" + str(tipo) + "_ofensivo_" + reboteador)
+                            pbp['cuarto'].append(cuarto)
+                            pbp['tiempo'].append(tiempo)
+                            pbp['resultado'].append("-")
                             # juega el mismo equipo el balón
                         else:
                             maximo = 24
                             equipo = (equipo + 1) % 2
-                            print("Fallo de " + jugador + ". Rebote para " + equipoOrden[equipo])
+                            
+                            pbp['equipo'].append(equipoOrden[equipo])
+                            pbp['jugador'].append(jugador)
+                            pbp['accion'].append("tiro_" + str(tipo) + "_defensivo_" + reboteador)
+                            pbp['cuarto'].append(cuarto)
+                            pbp['tiempo'].append(tiempo)
+                            pbp['resultado'].append("-")
                             # empieza una nueva posesión del rival
+                        
                     else:
-                        if jugador != jugadorAsiste:
-                            print("Canasta de " + jugador + " con asistencia de " + jugadorAsiste)
-                        else:
-                            print("Canasta de " + jugador + " con una gran jugada individual")
-                        print(equipoOrden[0] + " " + str(estadisticasEquipos[equipoOrden[0]]["Puntos"]) + " - " + str(estadisticasEquipos[equipoOrden[1]]["Puntos"]) + " " + equipoOrden[1])
+                        pbp['equipo'].append(equipoOrden[equipo])
+                        pbp['jugador'].append(jugador)
+                        pbp['accion'].append("tiro_" + str(tipo) + "_acertado_" + str(jugadorAsiste))
+                        pbp['cuarto'].append(cuarto)
+                        pbp['tiempo'].append(tiempo)
+                        pbp['resultado'].append(str(estadisticasEquipos[equipoOrden[0]]["Puntos"]) + " - " + str(estadisticasEquipos[equipoOrden[1]]["Puntos"]))
                         equipo = (equipo + 1) % 2
         # Si fin de cuarto se sacan los datos del mismo
         if tiempo <= 0:
             finCuarto()
-            print("Se acaba el cuarto " + str(cuarto))
             # Si fin del último cuarto se sacan los datos del partido
             if cuarto == 4:
-                print("Se acaba el partido")
                 finPartido()
             # Sino se empieza un nuevo cuarto
             else:
                 cuarto += 1
                 tiempo = 720
+
+    return diccionarioSolucion, pbp
 
 
 def saltoInicial():
@@ -142,14 +175,15 @@ def saltoInicial():
 def jugada(equipo):
     global equipoOrden
     # Simular jugada
-    if robo(equipoOrden[(equipo + 1)  % 2]):
-        return "","",True,False
+    r, robador = robo(equipoOrden[(equipo + 1)  % 2])
+    if r:
+        return "","",True,False, robador
     else:
         if falta(equipoOrden[equipo]):
-            return "","",False,True
+            return "","",False,True, robador
         else:
             jugador,jugadorAsiste = asistencia(equipoOrden[equipo])
-    return jugador,jugadorAsiste,False,False
+    return jugador,jugadorAsiste,False,False, robador
 
 
 def robo(equipo):
@@ -158,6 +192,7 @@ def robo(equipo):
     valor = aplicaDistribucionEquipo(equipo, "PorcentajeRobos")[0]
     resultado = random.random()
     maximo = 0
+    elegido = ""
     if resultado < valor:
         for jugador in estadisticasEquipos[equipo]["Jugadores"]:
             valor = aplicaDistribucionJugador(jugador, "Robos")[0]
@@ -166,8 +201,8 @@ def robo(equipo):
                 elegido = jugador
         estadisticasJugadores[equipo][elegido]["EstadisticasPartido"]["Robos"] += 1
         estadisticasEquipos[equipo]["Robos"] += 1
-        return True
-    return False
+        return True, elegido
+    return False, elegido
 
 
 def falta(equipo):
@@ -253,27 +288,33 @@ def tiro(jugador, jugadorAsistencia, equipo):
         tiro = 3
         estadisticasJugadores[equipo][jugador]["EstadisticasPartido"]["Tiros"] += 1
         estadisticasJugadores[equipo][jugador]["EstadisticasPartido"]["Triples"] += 1
+        estadisticasEquipos[equipo]["Tiros"] += 1
+        estadisticasEquipos[equipo]["Triples"] += 1
         valor = aplicaDistribucionJugador(jugador, "PorcentajeAciertoTriples")[0]
     else:
         tiro = 2
         estadisticasJugadores[equipo][jugador]["EstadisticasPartido"]["Tiros"] += 1
+        estadisticasEquipos[equipo]["Tiros"] += 1
         # Simular tiro
         valor = aplicaDistribucionJugador(jugador,"PorcentajeAciertos")[0]
     resultado = random.random()
 
     if resultado > valor:
-        return False
+        return False, tiro
 
     # Sumar estadistica al jugador
     if jugador != jugadorAsistencia:
         estadisticasJugadores[equipo][jugadorAsistencia]["EstadisticasPartido"]["Asistencias"] += 1
+        estadisticasEquipos[equipo]["Asistencias"] += 1
     estadisticasJugadores[equipo][jugador]["EstadisticasPartido"]["TirosAnotados"] += 1
     estadisticasJugadores[equipo][jugador]["EstadisticasPartido"]["Puntos"] += tiro
     estadisticasEquipos[equipo]["Puntos"] += tiro
+    estadisticasEquipos[equipo]["TirosAnotados"] += 1
     if tiro == 3:
         estadisticasJugadores[equipo][jugador]["EstadisticasPartido"]["TriplesAnotados"] += 1
+        estadisticasEquipos[equipo]["TriplesAnotados"] += 1
 
-    return True
+    return True, tiro
 
 
 def rebote(equipoPosesion, equipoDefiende):
@@ -286,24 +327,34 @@ def rebote(equipoPosesion, equipoDefiende):
         # decidir el jugador que suma la estadistica
         estadisticasEquipos[equipoPosesion]["Rebotes"] += 1
         maximo = 0
+        valores ={}
         for jugador in estadisticasEquipos[equipoPosesion]["Jugadores"]:
-            valor = aplicaDistribucionJugador(jugador, "Rebotes")[0]
-            if valor > maximo:
-                maximo = valor
+            valor = aplicaDistribucionJugador(jugador, "Asistencias")[0]
+            if valor > 0:
+                valores[jugador] = [maximo, (maximo + valor)]
+                maximo += valor
+        resultado = random.uniform(0, maximo)
+        for jugador in valores:
+            if (resultado >= valores[jugador][0]) and (resultado <= valores[jugador][1]):
                 elegido = jugador
         estadisticasJugadores[equipoPosesion][elegido]["EstadisticasPartido"]["Rebotes"] += 1
-        return True
+        return True, elegido
 
     estadisticasEquipos[equipoDefiende]["Rebotes"] += 1
     maximo = 0
+    valores = {}
     for jugador in estadisticasEquipos[equipoDefiende]["Jugadores"]:
-        valor = aplicaDistribucionJugador(jugador, "Rebotes")[0]
-        if valor > maximo:
-            maximo = valor
+        valor = aplicaDistribucionJugador(jugador, "Asistencias")[0]
+        if valor > 0:
+            valores[jugador] = [maximo, (maximo + valor)]
+            maximo += valor
+    resultado = random.uniform(0, maximo)
+    for jugador in valores:
+        if (resultado >= valores[jugador][0]) and (resultado <= valores[jugador][1]):
             elegido = jugador
     # decidir el jugador que suma la estadistica
     estadisticasJugadores[equipoDefiende][elegido]["EstadisticasPartido"]["Rebotes"] += 1
-    return False
+    return False, elegido
 
 
 def finCuarto():
@@ -312,23 +363,51 @@ def finCuarto():
 
 
 def finPartido():
-    global estadisticasEquipos; global estadisticasJugadores
+    global estadisticasEquipos; global estadisticasJugadores; global equipoOrden; global diccionarioSolucion
     # Recopilar datos finales
-    for equipo in estadisticasEquipos:
-        print(equipo)
-        print("\t" + str(estadisticasEquipos[equipo]["Puntos"]) + " puntos")
-        print("\t" + str(estadisticasEquipos[equipo]["Rebotes"]) + " rebotes")
-        print("\t" + str(estadisticasEquipos[equipo]["Faltas"]) + " faltas")
-        print("\t" + str(estadisticasEquipos[equipo]["Robos"]) + " robos")
-    for equipo in estadisticasJugadores:
-        print(equipo)
-        for jugador in estadisticasJugadores[equipo]:
-            print("\t" + jugador)
-            print("\t" + "\t" + str(estadisticasJugadores[equipo][jugador]["EstadisticasPartido"]["Puntos"]) + " puntos")
-            print("\t" + "\t" + str(estadisticasJugadores[equipo][jugador]["EstadisticasPartido"]["Robos"]) + " robos")
-            print("\t" + "\t" + str(estadisticasJugadores[equipo][jugador]["EstadisticasPartido"]["Tiros"]) + " tiros")
-            print("\t" + "\t" + str(estadisticasJugadores[equipo][jugador]["EstadisticasPartido"]["TirosAnotados"]) + " tiros anotados")
+    if estadisticasEquipos[equipoOrden[0]]["Puntos"] == estadisticasEquipos[equipoOrden[1]]["Puntos"]:
+        print(equipoOrden[0] + " " + str(estadisticasEquipos[equipoOrden[0]]["Puntos"]) + " - " + str(
+            estadisticasEquipos[equipoOrden[1]]["Puntos"]) + " " + equipoOrden[1])
+        print("Hay empate y.....")
+        print("Tenemos Prorroga!!!")
+    else:
+        diccionarioSolucion = {}
+        diccionarioSolucion["visitante"] = equipoOrden[0]
+        diccionarioSolucion["local"] = equipoOrden[1]
+        diccionarioSolucion["puntuacionVisitante"] = estadisticasEquipos[equipoOrden[0]]["Puntos"]
+        diccionarioSolucion["puntuacionLocal"] = estadisticasEquipos[equipoOrden[1]]["Puntos"]
 
+        diccionarioSolucion["estadisticasVisitante"] = {}
+        for estadistica in estadisticasEquipos[equipoOrden[0]]:
+            if estadistica != "Jugadores":
+                diccionarioSolucion["estadisticasVisitante"][estadistica] = estadisticasEquipos[equipoOrden[0]][estadistica]
+        diccionarioSolucion["estadisticasVisitante"]["PCT_TirosAnotados"] = ("{0:.2f}".format(float(diccionarioSolucion["estadisticasVisitante"]["TirosAnotados"] / diccionarioSolucion["estadisticasVisitante"]["Tiros"])))
+        diccionarioSolucion["estadisticasVisitante"]["PCT_TriplesAnotados"] = ("{0:.2f}".format(float(diccionarioSolucion["estadisticasVisitante"]["TriplesAnotados"] / diccionarioSolucion["estadisticasVisitante"]["Triples"])))
+
+        diccionarioSolucion["estadisticasLocal"] = {}
+        for estadistica in estadisticasEquipos[equipoOrden[1]]:
+            if estadistica != "Jugadores":
+                diccionarioSolucion["estadisticasLocal"][estadistica] = estadisticasEquipos[equipoOrden[1]][estadistica]
+        diccionarioSolucion["estadisticasLocal"]["PCT_TirosAnotados"] = ("{0:.2f}".format(float(diccionarioSolucion["estadisticasLocal"]["TirosAnotados"] / diccionarioSolucion["estadisticasLocal"]["Tiros"])))
+        diccionarioSolucion["estadisticasLocal"]["PCT_TriplesAnotados"] = ("{0:.2f}".format(float(diccionarioSolucion["estadisticasLocal"]["TriplesAnotados"] / diccionarioSolucion["estadisticasLocal"]["Triples"])))
+
+        diccionarioSolucion["jugadoresVisitante"] = {}
+        for jugador in estadisticasEquipos[equipoOrden[0]]["Jugadores"]:
+            diccionarioSolucion["jugadoresVisitante"][jugador] = estadisticasJugadores[equipoOrden[0]][jugador]["EstadisticasPartido"]
+            if diccionarioSolucion["jugadoresVisitante"][jugador]["Tiros"] != 0:
+                diccionarioSolucion["jugadoresVisitante"][jugador]["PCT_TirosAnotados"] = ("{0:.2f}".format(float(diccionarioSolucion["jugadoresVisitante"][jugador]["TirosAnotados"] / diccionarioSolucion["jugadoresVisitante"][jugador]["Tiros"])))
+            if diccionarioSolucion["jugadoresVisitante"][jugador]["Triples"] != 0:
+                diccionarioSolucion["jugadoresVisitante"][jugador]["PCT_TriplesAnotados"] = ("{0:.2f}".format(float(diccionarioSolucion["jugadoresVisitante"][jugador]["TriplesAnotados"] / diccionarioSolucion["jugadoresVisitante"][jugador]["Triples"])))
+
+        diccionarioSolucion["jugadoresLocal"] = {}
+        for jugador in estadisticasEquipos[equipoOrden[1]]["Jugadores"]:
+            diccionarioSolucion["jugadoresLocal"][jugador] = estadisticasJugadores[equipoOrden[1]][jugador]["EstadisticasPartido"]
+            if diccionarioSolucion["jugadoresLocal"][jugador]["Tiros"] != 0:
+                diccionarioSolucion["jugadoresLocal"][jugador]["PCT_TirosAnotados"] = ("{0:.2f}".format(float( diccionarioSolucion["jugadoresLocal"][jugador]["TirosAnotados"] / diccionarioSolucion["jugadoresLocal"][jugador]["Tiros"])))
+            if diccionarioSolucion["jugadoresLocal"][jugador]["Triples"] != 0:
+                diccionarioSolucion["jugadoresLocal"][jugador]["PCT_TriplesAnotados"] = ("{0:.2f}".format(float(diccionarioSolucion["jugadoresLocal"][jugador]["TriplesAnotados"] /diccionarioSolucion["jugadoresLocal"][jugador]["Triples"])))
+
+        return False
 
 def aplicaDistribucionJugador(jugador, estadistica):
     global distribucionesJugadores
@@ -774,8 +853,10 @@ def inicializarEquipos(nombreLocal, nombreVisitante):
     jugadores = pickle.load(infile)
     infile.close()
 
-    estadisticasEquipos[nombreLocal] = { "Puntos": 0, "Rebotes": 0, "Faltas": 0, "Robos": 0, "Jugadores": [] }
-    estadisticasEquipos[nombreVisitante] = { "Puntos": 0, "Rebotes": 0, "Faltas": 0, "Robos": 0, "Jugadores": [] }
+    estadisticasEquipos[nombreLocal] = { "Tiros": 0, "TirosAnotados": 0,  "PCT_TirosAnotados": 0.0, "TriplesAnotados": 0, "Triples": 0,
+                                         "PCT_TriplesAnotados": 0.0, "Rebotes": 0,"Asistencias": 0, "Robos": 0, "Faltas": 0, "Puntos":0, "Jugadores": [] }
+    estadisticasEquipos[nombreVisitante] = { "TirosAnotados": 0, "Tiros": 0, "PCT_TirosAnotados": 0.0, "TriplesAnotados": 0, "Triples": 0,
+                                         "PCT_TriplesAnotados": 0.0, "Rebotes": 0,"Asistencias": 0, "Robos": 0, "Faltas": 0, "Puntos":0, "Jugadores": [] }
     for jugador in jugadores:
         if jugadores[jugador]["Equipo"] == nombreLocal:
             estadisticasEquipos[nombreLocal]["Jugadores"].append(jugador)
@@ -796,11 +877,13 @@ def inicializarJugadores(nombreLocal, nombreVisitante):
             estadisticasJugadores[nombreLocal][jugador] = \
                 {"Estadisticas" : jugadores[jugador]["Estadisticas"],
                  "EstadisticasPartido" :
-                     { "Puntos": 0, "Asistencias": 0, "Rebotes": 0, "Robos": 0, "TirosAnotados": 0, "Tiros": 0, "TriplesAnotados": 0, "Triples": 0 }
+                     { "TirosAnotados": 0, "Tiros": 0, "PCT_TirosAnotados": 0.0, "TriplesAnotados": 0, "Triples": 0,
+                                         "PCT_TriplesAnotados": 0.0, "Rebotes": 0,"Asistencias": 0, "Robos": 0, "Puntos":0}
                 }
         elif jugadores[jugador]["Equipo"] == nombreVisitante:
             estadisticasJugadores[nombreVisitante][jugador] = \
                 {"Estadisticas" : jugadores[jugador]["Estadisticas"],
                  "EstadisticasPartido" :
-                     { "Puntos": 0, "Asistencias": 0, "Rebotes": 0, "Robos": 0, "TirosAnotados": 0, "Tiros": 0, "TriplesAnotados": 0, "Triples": 0 }
+                     { "TirosAnotados": 0, "Tiros": 0, "PCT_TirosAnotados": 0.0, "TriplesAnotados": 0, "Triples": 0,
+                                         "PCT_TriplesAnotados": 0.0, "Rebotes": 0,"Asistencias": 0, "Robos": 0, "Puntos":0}
                 }

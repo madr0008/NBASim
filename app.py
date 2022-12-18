@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request
 from dependencias import Partido
 from dependencias import Simulacion
+import pickle
+import json
 
 app = Flask(__name__)
 
@@ -54,20 +56,6 @@ def simular_partido() :
         return render_template('simular_partido.html', datos=datos, atributos = ['JUGADOR', 'MP', 'FG', 'FGA', 'FG%', '3P', '3PA', '3P%', 'FT', 'FTA', 'FT%', 'ORB', 'DRB', 'TRB', 'AST', 'STL', 'BLK', 'TOV', 'PF', 'PTS', '+/-'])
 
 
-#Ruta para elegir parámetros a simular
-@app.route('/resultados_futuro', methods=['GET', 'POST'])
-def simular_futuro() :
-    global datos
-    if request.method == 'POST':
-        temporada = int(request.form['temporada'])
-        equipo1 = request.form['equipo1'].split(",")
-        equipo2 = request.form['equipo2'].split(",")
-        #Solicitar datos del partido
-        nuevosDatos = Simulacion.simularPartido(equipo1, equipo2)
-        return render_template('resultados_futuro.html', datos=nuevosDatos, atributos = ['JUGADOR', 'MP', 'FG', 'FGA', 'FG%', '3P', '3PA', '3P%', 'FT', 'FTA', 'FT%', 'ORB', 'DRB', 'TRB', 'AST', 'STL', 'BLK', 'TOV', 'PF', 'PTS', '+/-'])
-
-
-
 #Ruta para mostrar resultados
 @app.route('/resultados', methods=['GET', 'POST'])
 def resultados() :
@@ -89,6 +77,24 @@ def resultados() :
                 condiciones[i]["tipotiro"] = request.form['tipotiro' + str(i + 1)]
         nuevosDatos = Simulacion.simularPartido(datos, condiciones)
         return render_template('resultados.html', datos=nuevosDatos, condiciones=condiciones, atributos = ['JUGADOR', 'MP', 'FG', 'FGA', 'FG%', '3P', '3PA', '3P%', 'FT', 'FTA', 'FT%', 'ORB', 'DRB', 'TRB', 'AST', 'STL', 'BLK', 'TOV', 'PF', 'PTS', '+/-'])
+
+
+#Ruta para elegir parámetros a simular
+@app.route('/resultados_futuro', methods=['GET', 'POST'])
+def simular_futuro() :
+    global datos
+    if request.method == 'POST':
+        temporada = int(request.form['temporada'])
+        equipo1 = request.form['equipo1'].split(",")
+        equipo2 = request.form['equipo2'].split(",")
+        #Solicitar datos del partido
+        nuevosDatos, pbp = Simulacion.simularPartido(equipo1, equipo2)
+        infile = open(".\Ficheros\IdJugadores", "rb")
+        ids = pickle.load(infile)
+        infile.close()
+        vis = str(nuevosDatos['puntuacionVisitante'])
+        loc = str(nuevosDatos['puntuacionLocal'])
+        return render_template('resultados_futuro.html', datos=nuevosDatos, pbp=json.dumps(pbp), ids=json.dumps(ids), equipo1=equipo1, equipo2=equipo2, atributosJ = ['JUGADOR', 'FG', 'FGA', 'FG%', '3P', '3PA', '3P%', 'RB', 'AST', 'STL', 'PTS'], atributosE = ['FG', 'FGA', 'FG%', '3P', '3PA', '3P%', 'RB', 'AST', 'STL', 'PF', 'PTS'], vis=vis, loc=loc)
 
 
 if __name__ == '__main__' :

@@ -1,6 +1,7 @@
 from basketball_reference_scraper.box_scores import get_box_scores
 from basketball_reference_scraper.seasons import get_schedule, get_standings
 from basketball_reference_scraper.shot_charts import get_shot_chart
+from basketball_reference_scraper.teams import get_roster
 from dependencias import Equipo
 from pandas import DataFrame as df
 

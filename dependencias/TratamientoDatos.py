@@ -273,18 +273,20 @@ def ajustarDatos(nombre, min, max):
     objeto = pickle.load(infile)
     infile.close()
     distribucion = dict()
-    for estadistica in objeto[nombre]["Estadisticas"]:
-        if estadistica != "TiempoPosesion" :
-            distribucion[estadistica] = dict() #Deberia ser un dict, creo
-            n, p = elegirDistribucion(objeto[nombre]["Estadisticas"][estadistica])
-            distribucion[estadistica]['nombre'] = n
-            distribucion[estadistica]['parametros'] = p
-        else :
-            distribucion[estadistica] = dict()
-            distribucion[estadistica]['nombre'] = "triangular"
-            distribucion[estadistica]['min'] = min
-            distribucion[estadistica]['max'] = max
-            distribucion[estadistica]['media'] = objeto[nombre]["Estadisticas"][estadistica]
+    for equipo in objeto:
+        distribucion[equipo] = {}
+        for estadistica in objeto[equipo]["Estadisticas"]:
+            if estadistica != "TiempoPosesion" :
+                distribucion[equipo][estadistica] = dict() #Deberia ser un dict, creo
+                n, p = elegirDistribucion(objeto[nombre]["Estadisticas"][estadistica])
+                distribucion[equipo][estadistica]['nombre'] = n
+                distribucion[equipo][estadistica]['parametros'] = p
+            else :
+                distribucion[equipo][estadistica] = dict()
+                distribucion[equipo][estadistica]['nombre'] = "triangular"
+                distribucion[equipo][estadistica]['min'] = min
+                distribucion[equipo][estadistica]['max'] = max
+                distribucion[equipo][estadistica]['media'] = objeto[nombre]["Estadisticas"][estadistica]
             
     return distribucion
 
@@ -295,13 +297,13 @@ def ajustarDatosJugadores(equipoLocal, equipoVisitante):
     infile.close()
     distribucion = dict()
     for objeto in objetos.keys():
-        if objetos[objeto]["Equipo"] == equipoLocal or objetos[objeto]["Equipo"] == equipoVisitante:
-            distribucion[objeto] = dict()
-            for estadistica in objetos[objeto]["Estadisticas"]:
-                distribucion[objeto][estadistica] = dict()
-                n, p = elegirDistribucion(objetos[objeto]["Estadisticas"][estadistica])
-                distribucion[objeto][estadistica]['nombre'] = n
-                distribucion[objeto][estadistica]['parametros'] = p
+        #if objetos[objeto]["Equipo"] == equipoLocal or objetos[objeto]["Equipo"] == equipoVisitante:
+        distribucion[objeto] = dict()
+        for estadistica in objetos[objeto]["Estadisticas"]:
+            distribucion[objeto][estadistica] = dict()
+            n, p = elegirDistribucion(objetos[objeto]["Estadisticas"][estadistica])
+            distribucion[objeto][estadistica]['nombre'] = n
+            distribucion[objeto][estadistica]['parametros'] = p
     return distribucion
 
 

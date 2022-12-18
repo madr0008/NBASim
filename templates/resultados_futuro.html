@@ -71,136 +71,172 @@
         <section class="clean-block features">
             <div class="container">
                 <div class="block-heading">
-                    <h2 class="text-info">Estadísticas del partido simulado</h2>
+                    <h2 class="text-info">Resultado del partido simulado</h2>
                 </div>
-                <div>
+                <br>
+                <div id="pbp">
+                    <div id = "botones">
+                        <div class="col" style="text-align:center;">
+                            <label>Velocidad de la simulación: </label>
+                            <input value="1" min="1" type="number" onchange="subirVelocidad(this.value)">
+                        </div>
+                        <br>
+                        <div class="col" style="text-align:center;">
+                            <button class="btn btn-primary btn-lg" style="display: block; margin-left: auto; margin-right:auto" onclick="omitir()">Omitir</button>
+                        </div>
+                    <br>
+                    </div>
+                    <br>
                     <div class="card card-default card-input">
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-2 feature-box">
-                                    <img src="static/img/equipos/{{ datos['local'][0] }}.png" width="75%">
+                                    <img src="static/img/equipos/{{ equipo1[0] }}.png" width="75%">
                                 </div>
                                 <div class="col text-center">
-                                    <h1 class="text-center">
-                                        <strong>{{ datos['estadisticasLocal'][18] }} - {{ datos['estadisticasVisitante'][18] }}</strong>
+                                    <h5 id="cuarto" class="text-center">
+                                        Cuarto: 1
+                                    </h5>
+                                    <h1 id="marcador" class="text-center">
+                                        0 - 0
                                     </h1>
+                                    <h4 id="contador" class="text-center">
+                                        12:00
+                                    </h4>
                                 </div>
                                 <div class="col-md-2 feature-box">
-                                    <img src="static/img/equipos/{{ datos['visitante'][0] }}.png" width="75%">
+                                    <img src="static/img/equipos/{{ equipo2[0] }}.png" width="75%">
+                                </div>
+                            </div>
+                            <br>
+                            <div class="row">
+                                <div class="col" style="text-align:right;">
+                                    <img id="img1" src="" width="50%">
+                                </div>
+                                <div class="col-6" style="text-align: center; margin-top: auto; margin-bottom: auto;">
+                                    <strong id="accionEquipo"></strong>
+                                </div>
+                                <div class="col" style="text-align:left;">
+                                    <img id="img2" src="" width="50%">
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <br>
             </div>
-            <div class="container">
-                <br>
-                <h3 style="text-align: center;">{{ datos['local'][1] }}</h3>
-                <br>
-                <div>
+            <br>
+            <div style="display:none;" id="estadisticas">
+                <div class="block-heading">
+                    <h2 class="text-info">Estadísticas del partido simulado</h2>
+                </div>
+                <div class="container">
+                    <br>
+                    <h3 style="text-align: center;">{{ datos['local'] }}</h3>
+                    <br>
                     <div>
-                        <h4 style="text-align: center;">Estadísticas colectivas</h4>
-                        <div class="table-responsive">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        {% for i in range(atributos|length - 2) %}
-                                            <th>{{ atributos[i + 1] }}</th>
-                                        {% endfor %}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        {% for i in range(datos['estadisticasLocal']|length - 1) %}
-                                            <td>{{ datos['estadisticasLocal'][i] }}</td>
-                                        {% endfor %}
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div>
-                        <br>
-                        <h4 style="text-align: center;">Estadísticas individuales</h4>
-                        <div class="table-responsive">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        {% for i in range(atributos|length) %}
-                                            <th>{{ atributos[i] }}</th>
-                                        {% endfor %}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for i in datos['jugadoresLocal'] %}
+                        <div>
+                            <h4 style="text-align: center;">Estadísticas colectivas</h4>
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
                                         <tr>
-                                            <td>{{ i }}</td>
-                                            {% for j in range(datos['jugadoresLocal'][i]|length) %}
-                                                <td>{{ datos['jugadoresLocal'][i][j] }}</td>
+                                            {% for i in range(atributosE|length) %}
+                                                <th>{{ atributosE[i] }}</th>
                                             {% endfor %}
                                         </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-                <br>
-            </div>
-            <div class="container">
-                <br>
-                <h3 style="text-align: center;">{{ datos['visitante'][1] }}</h3>
-                <br>
-                <div>
-                    <div>
-                        <h4 style="text-align: center;">Estadísticas colectivas</h4>
-                        <div class="table-responsive">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        {% for i in range(atributos|length - 2) %}
-                                            <th>{{ atributos[i + 1] }}</th>
-                                        {% endfor %}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        {% for i in range(datos['estadisticasVisitante']|length - 1) %}
-                                            <td>{{ datos['estadisticasVisitante'][i] }}</td>
-                                        {% endfor %}
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div>
-                        <br>
-                        <h4 style="text-align: center;">Estadísticas individuales</h4>
-                        <div class="table-responsive">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        {% for i in range(atributos|length) %}
-                                            <th>{{ atributos[i] }}</th>
-                                        {% endfor %}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for i in datos['jugadoresVisitante'] %}
+                                    </thead>
+                                    <tbody>
                                         <tr>
-                                            <td>{{ i }}</td>
-                                            {% for j in range(datos['jugadoresVisitante'][i]|length) %}
-                                                <td>{{ datos['jugadoresVisitante'][i][j] }}</td>
+                                            {% for estadistica in datos['estadisticasLocal'] %}
+                                                <td>{{ datos['estadisticasLocal'][estadistica] }}</td>
                                             {% endfor %}
                                         </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div>
+                            <br>
+                            <h4 style="text-align: center;">Estadísticas individuales</h4>
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            {% for atributo in atributosJ %}
+                                                <th>{{ atributo }}</th>
+                                            {% endfor %}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for i in datos['jugadoresLocal'] %}
+                                            <tr>
+                                                <td>{{ i }}</td>
+                                                {% for j in datos['jugadoresLocal'][i]%}
+                                                    <td>{{ datos['jugadoresLocal'][i][j] }}</td>
+                                                {% endfor %}
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
+                    <br>
                 </div>
-                <br>
+                <div class="container">
+                    <br>
+                    <h3 style="text-align: center;">{{ datos['visitante'] }}</h3>
+                    <br>
+                    <div>
+                        <div>
+                            <h4 style="text-align: center;">Estadísticas colectivas</h4>
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            {% for i in range(atributosE|length) %}
+                                                <th>{{ atributosE[i] }}</th>
+                                            {% endfor %}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            {% for estadistica in datos['estadisticasVisitante'] %}
+                                                <td>{{ datos['estadisticasVisitante'][estadistica] }}</td>
+                                            {% endfor %}
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div>
+                            <br>
+                            <h4 style="text-align: center;">Estadísticas individuales</h4>
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            {% for atributo in atributosJ %}
+                                                <th>{{ atributo }}</th>
+                                            {% endfor %}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for i in datos['jugadoresVisitante'] %}
+                                            <tr>
+                                                <td>{{ i }}</td>
+                                                {% for j in datos['jugadoresVisitante'][i]%}
+                                                    <td>{{ datos['jugadoresVisitante'][i][j] }}</td>
+                                                {% endfor %}
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <br>
+                </div>
             </div>
         </section>
     </main>
@@ -209,6 +245,214 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/baguettebox.js/1.11.1/baguetteBox.min.js"></script>
     <script src="static/js/vanilla-zoom.js"></script>
     <script src="static/js/theme.js"></script>
+
+    
+<script>
+
+var distance = 720;
+var cuarto = 1;
+var pbp = {{pbp | safe}};
+var ids = {{ids | safe}};
+var vis = {{ vis | safe }};
+var loc = {{ loc | safe }}
+var cont = 0;
+var velocidad = 1;
+var equipo1 = {{ equipo1 | safe }};
+var equipo2 = {{ equipo2 | safe }};
+
+// Update the count down every 1 second
+function reloj() {
+
+  if (pbp["cuarto"][cont] == cuarto && pbp["tiempo"][cont] == distance) {
+    switch(pbp["accion"][cont]) {
+        case "ganaSalto" :
+            var equipo = pbp["equipo"][cont];
+            document.getElementById("accionEquipo").innerHTML = "¡Los " + equipo + " ganan el salto inicial!";
+            if (equipo == equipo1[1]) {
+                document.getElementById("img2").style = "display:none;";
+                document.getElementById("img1").src = "static/img/equipos/" + equipo1[0] + ".png";
+                document.getElementById("img1").style = "display:inline;";
+            } else {
+                document.getElementById("img1").style = "display:none;";
+                document.getElementById("img2").src = "static/img/equipos/" + equipo2[0] + ".png";
+                document.getElementById("img2").style = "display:inline;";
+            }
+            break;
+        
+        case "saca" :
+            var equipo = pbp["equipo"][cont];
+            document.getElementById("accionEquipo").innerHTML = "¡Arranca el " + cuarto + "cuarto! Sacan los " + equipo;
+            if (equipo == equipo1[1]) {
+                document.getElementById("img2").style = "display:none;";
+                document.getElementById("img1").src = "static/img/equipos/" + equipo1[0] + ".png";
+                document.getElementById("img1").style = "display:inline;";
+            } else {
+                document.getElementById("img1").style = "display:none;";
+                document.getElementById("img2").src = "static/img/equipos/" + equipo2[0] + ".png";
+                document.getElementById("img2").style = "display:inline;";
+            }
+            break;
+        
+        case "roba" :
+            var equipo = pbp["equipo"][cont];
+            var jugador = pbp["jugador"][cont];
+            document.getElementById("accionEquipo").innerHTML = "¡Roba " + jugador + " para los " + equipo + "!";
+            if (equipo == equipo1[1]) {
+                document.getElementById("img2").style = "display:none;";
+                document.getElementById("img1").src = "https://ak-static.cms.nba.com/wp-content/uploads/headshots/nba/latest/260x190/" + ids[jugador] + ".png";
+                document.getElementById("img1").style = "display:inline;";
+            } else {
+                document.getElementById("img1").style = "display:none;";
+                document.getElementById("img2").src = "https://ak-static.cms.nba.com/wp-content/uploads/headshots/nba/latest/260x190/" + ids[jugador] + ".png";
+                document.getElementById("img2").style = "display:inline;";
+            }
+            break;
+        
+        case "falta" :
+            var equipo = pbp["equipo"][cont];
+            document.getElementById("accionEquipo").innerHTML = "Falta sobre los " + equipo;
+            if (equipo == equipo1[1]) {
+                document.getElementById("img2").style = "display:none;";
+                document.getElementById("img1").src = "static/img/equipos/" + equipo1[0] + ".png";
+                document.getElementById("img1").style = "display:inline;";
+            } else {
+                document.getElementById("img1").style = "display:none;";
+                document.getElementById("img2").src = "static/img/equipos/" + equipo2[0] + ".png";
+                document.getElementById("img2").style = "display:inline;";
+            }
+            break;
+        
+        default :
+            var equipo = pbp["equipo"][cont];
+            var jugador = pbp["jugador"][cont];
+            aux = pbp["accion"][cont].split("_");
+            if (aux[2] == "acertado") {
+                if (aux[1] == 2) {
+                    if (aux[3] == jugador) {
+                        document.getElementById("accionEquipo").innerHTML = "¡Canastón de 2 de " + jugador + " tras una gran jugada individual!";
+                    } else {
+                        document.getElementById("accionEquipo").innerHTML = "¡Canasta de 2 de " + jugador + "! Asistencia de " + aux[3];
+                    }  
+                } else {
+                    if (aux[3] == jugador) {
+                        document.getElementById("accionEquipo").innerHTML = "¡Triplazo de " + jugador + " tras una gran jugada individual! ¡Qué jugador!";
+                    } else {
+                        document.getElementById("accionEquipo").innerHTML = "¡Triple de " + jugador + "! Asistencia de " + aux[3];
+                    }
+                }
+                if (equipo == equipo1[1]) {
+                    document.getElementById("img2").style = "display:none;";
+                    document.getElementById("img1").src = ("https://ak-static.cms.nba.com/wp-content/uploads/headshots/nba/latest/260x190/" + ids[jugador] + ".png");
+                    document.getElementById("img1").style = "display:inline;";
+                } else {
+                    document.getElementById("img1").style = "display:none;";
+                    document.getElementById("img2").src = "https://ak-static.cms.nba.com/wp-content/uploads/headshots/nba/latest/260x190/" + ids[jugador] + ".png";
+                    document.getElementById("img2").style = "display:inline;";
+                }
+                document.getElementById("marcador").innerHTML = pbp["resultado"][cont];
+            } else if (aux[2] == "defensivo") {
+                if (equipo == equipo1[1]) {
+                    document.getElementById("img2").style = "display:none;";
+                    if (aux[1] == 2) {
+                        document.getElementById("accionEquipo").innerHTML = "Falló " + jugador + " de 2. ¡Rebote de " + aux[3] + " para que jueguen los " + equipo1[1] + "!";
+                    } else {
+                        document.getElementById("accionEquipo").innerHTML = "¡No entra el triple de " + jugador + "! ¡Rebote de " + aux[3] + " para que jueguen los " + equipo1[1] + "!";
+                    }
+                    document.getElementById("img1").src = "https://ak-static.cms.nba.com/wp-content/uploads/headshots/nba/latest/260x190/" + ids[aux[3]] + ".png";
+                    document.getElementById("img1").style = "display:inline;";
+                } else {
+                    document.getElementById("img1").style = "display:none;";
+                    if (aux[1] == 2) {
+                        document.getElementById("accionEquipo").innerHTML = "Falló " + jugador + " de 2. ¡Rebote de " + aux[3] + " para que jueguen los " + equipo2[1] + "!";
+                    } else {
+                        document.getElementById("accionEquipo").innerHTML = "¡No entra el triple de " + jugador + "! ¡Rebote de " + aux[3] + " para que jueguen los " + equipo2[1] + "!";
+                    }
+                    document.getElementById("img2").src = "https://ak-static.cms.nba.com/wp-content/uploads/headshots/nba/latest/260x190/" + ids[aux[3]] + ".png";
+                    document.getElementById("img2").style = "display:inline;";
+                }
+            } else {
+                if (equipo == equipo1[1]) {
+                    document.getElementById("img2").style = "display:none;";
+                    if (aux[1] == 2) {
+                        document.getElementById("accionEquipo").innerHTML = "Falló " + jugador + " de 2. ¡Pero ahí está " + aux[3] + " con el rebote ofensivo para que jueguen de nuevo los " + equipo1[1] + "!";
+                    } else {
+                        document.getElementById("accionEquipo").innerHTML = "No entra el triple de " + jugador + ". ¡Pero ahí está " + aux[3] + " con el rebote ofensivo para que jueguen de nuevo los " + equipo1[1] + "!";
+                    }
+                    document.getElementById("img1").src = "https://ak-static.cms.nba.com/wp-content/uploads/headshots/nba/latest/260x190/" + ids[aux[3]] + ".png";
+                    document.getElementById("img1").style = "display:inline;";
+                } else {
+                    document.getElementById("img1").style = "display:none;";
+                    if (aux[1] == 2) {
+                        document.getElementById("accionEquipo").innerHTML = "Falló " + jugador + " de 2. ¡Pero ahí está " + aux[3] + " con el rebote ofensivo para que jueguen de nuevo los " + equipo2[1] + "!";
+                    } else {
+                        document.getElementById("accionEquipo").innerHTML = "No entra el triple de " + jugador + ". ¡Pero ahí está " + aux[3] + " con el rebote ofensivo para que jueguen de nuevo los " + equipo2[1] + "!";
+                    }
+                    document.getElementById("img2").src = "https://ak-static.cms.nba.com/wp-content/uploads/headshots/nba/latest/260x190/" + ids[aux[3]] + ".png";
+                    document.getElementById("img2").style = "display:inline;";
+                }
+            }
+            break;
+
+    }
+    cont++;
+  }
+
+  // Time calculations for days, hours, minutes and seconds
+  var minutes = Math.floor(distance/60);
+  var seconds = Math.floor(distance%60);
+
+  distance--;
+
+  // Display the result in the element with id="demo"
+  if (seconds < 10) {
+    document.getElementById("contador").innerHTML = minutes + ":0" + seconds;
+  } else {
+    document.getElementById("contador").innerHTML = minutes + ":" + seconds;
+  }
+
+  // If the count down is finished, write some text
+  if (distance < 0) {
+    distance = 720;
+    if (cuarto == 4) {
+        clearInterval(x);
+        document.getElementById("contador").innerHTML = "FIN";
+        document.getElementById("img1").style = "display:none;";
+        document.getElementById("img2").style = "display:none;";
+        document.getElementById("accionEquipo").innerHTML = "¡Acaba el partido!";
+        document.getElementById("botones").style = "display:none;";
+        document.getElementById("estadisticas").style = "display: block";
+    } else {
+        document.getElementById("img1").style = "display:none;";
+        document.getElementById("img2").style = "display:none;";
+        document.getElementById("accionEquipo").innerHTML = "¡Termina el " + cuarto + " cuarto!";
+        //Dormir unos segundos
+        cuarto++;
+        document.getElementById("cuarto").innerHTML = "Cuarto: " + cuarto;
+    }
+  }
+}
+
+x = setInterval(reloj, velocidad*1000)
+
+function subirVelocidad(n) {
+    velocidad = 1/n;
+    clearInterval(x);
+    x = setInterval(reloj, velocidad*1000);
+}
+
+function omitir() {
+    clearInterval(x);
+    document.getElementById("botones").style = "display:none;";
+    document.getElementById("contador").innerHTML = "FIN";
+    document.getElementById("img1").style = "display:none;";
+    document.getElementById("img2").style = "display:none;";
+    document.getElementById("accionEquipo").innerHTML = "¡Acaba el partido!";
+    document.getElementById("estadisticas").style = "display: block";
+    document.getElementById("marcador").innerHTML = vis + " - " + loc;
+}
+
+</script>
+
 </body>
 
 </html>
