@@ -54,6 +54,8 @@
         background-color: #095776;
         transition: 0.2s;
     }
+
+
 </style>
 <body>
     <nav class="navbar navbar-light navbar-expand-lg fixed-top bg-white clean-navbar">
@@ -73,7 +75,6 @@
                 <div class="block-heading">
                     <h2 class="text-info">Resultado del partido simulado</h2>
                 </div>
-                <br>
                 <div id="pbp">
                     <div id = "botones">
                         <div class="col" style="text-align:center;">
@@ -124,13 +125,17 @@
                     </div>
                 </div>
             </div>
-            <br>
             <div style="display:none;" id="estadisticas">
+                <br>
+                <div class="container" style="text-align: center;">
+                    <h4 style="text-align: center;">Visualizar estadísticas</h4>
+                    <button class="btn btn-outline-primary btn-lg botonEquipo" type="button" id="botonLocal" >{{ datos['local'] }}</button>
+                    <button class="btn btn-outline-primary btn-lg botonEquipo" type="button" id="botonVisitante" >{{ datos['visitante'] }}</button>
+                </div>
                 <div class="block-heading">
                     <h2 class="text-info">Estadísticas del partido simulado</h2>
                 </div>
-                <div class="container">
-                    <br>
+                <div class="container" id="local">
                     <h3 style="text-align: center;">{{ datos['local'] }}</h3>
                     <br>
                     <div>
@@ -183,8 +188,7 @@
                     </div>
                     <br>
                 </div>
-                <div class="container">
-                    <br>
+                <div class="container" id="visitante">
                     <h3 style="text-align: center;">{{ datos['visitante'] }}</h3>
                     <br>
                     <div>
@@ -417,6 +421,9 @@ function reloj() {
         clearInterval(x);
         document.getElementById("contador").innerHTML = "FIN";
         document.getElementById("img1").style = "display:none;";
+        document.getElementById("botonLocal").classList.toggle("active");
+        document.getElementById('local').style.display = 'block';
+        document.getElementById('visitante').style.display = 'none';
         document.getElementById("img2").style = "display:none;";
         document.getElementById("accionEquipo").innerHTML = "¡Acaba el partido!";
         document.getElementById("botones").style = "display:none;";
@@ -442,7 +449,11 @@ function subirVelocidad(n) {
 
 function omitir() {
     clearInterval(x);
+    document.getElementById("cuarto").innerHTML = "Cuarto: 4";
+    document.getElementById("botonLocal").classList.toggle("active");
     document.getElementById("botones").style = "display:none;";
+    document.getElementById('local').style.display = 'block';
+    document.getElementById('visitante').style.display = 'none';
     document.getElementById("contador").innerHTML = "FIN";
     document.getElementById("img1").style = "display:none;";
     document.getElementById("img2").style = "display:none;";
@@ -450,6 +461,35 @@ function omitir() {
     document.getElementById("estadisticas").style = "display: block";
     document.getElementById("marcador").innerHTML = vis + " - " + loc;
 }
+
+var boton1 = document.getElementById("botonLocal");
+var boton2 = document.getElementById("botonVisitante");
+
+document.getElementById('botonLocal').addEventListener("click", function(){
+    document.getElementById('local').style.display = 'block';
+    document.getElementById('visitante').style.display = 'none';
+       if(boton2.classList.contains("active")){
+          boton2.classList.remove("active");
+       }
+
+       if(!boton1.classList.contains("active")){
+          boton1.classList.toggle("active");
+       }
+
+});
+
+document.getElementById('botonVisitante').addEventListener("click", function(){
+    document.getElementById('local').style.display = 'none';
+    document.getElementById('visitante').style.display = 'block';
+   if(boton1.classList.contains("active")){
+      boton1.classList.remove("active");
+   }
+
+   if(!boton2.classList.contains("active")){
+      boton2.classList.toggle("active");
+   }
+
+});
 
 </script>
 
