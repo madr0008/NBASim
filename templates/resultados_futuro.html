@@ -263,6 +263,7 @@ var cont = 0;
 var velocidad = 1;
 var equipo1 = {{ equipo1 | safe }};
 var equipo2 = {{ equipo2 | safe }};
+var prorroga = "";
 
 // Update the count down every 1 second
 function reloj() {
@@ -417,7 +418,7 @@ function reloj() {
   // If the count down is finished, write some text
   if (distance < 0) {
     distance = 720;
-    if (cuarto == 4) {
+    if (cont == pbp['cuarto'].length) { 
         clearInterval(x);
         document.getElementById("contador").innerHTML = "FIN";
         document.getElementById("img1").style = "display:none;";
@@ -428,13 +429,28 @@ function reloj() {
         document.getElementById("accionEquipo").innerHTML = "¡Acaba el partido!";
         document.getElementById("botones").style = "display:none;";
         document.getElementById("estadisticas").style = "display: block";
-    } else {
+    } else if (cuarto < 4) {
         document.getElementById("img1").style = "display:none;";
         document.getElementById("img2").style = "display:none;";
         document.getElementById("accionEquipo").innerHTML = "¡Termina el " + cuarto + " cuarto!";
         //Dormir unos segundos
         cuarto++;
         document.getElementById("cuarto").innerHTML = "Cuarto: " + cuarto;
+    } else if (cuarto == 4 && prorroga == "") {
+        document.getElementById("img1").style = "display:none;";
+        document.getElementById("img2").style = "display:none;";
+        document.getElementById("accionEquipo").innerHTML = "¡Fin del tiempo reglamentario y hay empate en el marcador! ¡NOS VAMOS A LA PRÓRROGA!";
+        //Dormir unos segundos
+        prorroga = "OT1";
+        document.getElementById("cuarto").innerHTML = prorroga;
+    } else {
+        document.getElementById("img1").style = "display:none;";
+        document.getElementById("img2").style = "display:none;";
+        document.getElementById("accionEquipo").innerHTML = "¡Sique el empate en el marcador! ¡Otra prórroga más!";
+        //Dormir unos segundos
+        var prorrogaActual = prorroga.split("OT")[1]
+        prorroga = "OT" + prorrogaActual;
+        document.getElementById("cuarto").innerHTML = prorroga;
     }
   }
 }
